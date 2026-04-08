@@ -31,3 +31,12 @@ logs/
 # Generated outputs
 generated_variants/
 sharepoint/
+
+# AI tooling (agent-specific, not project code)
+.claude/
+.codex/
+.planning/
+.qwen/
+
+# Graphify (generated knowledge graph)
+graphify-out/
