@@ -1,0 +1,23 @@
+workspace:
+  root: .
+tools:
+  ffmpeg: ffmpeg
+  ffprobe: ffprobe
+  m365: m365
+database:
+  path: clips.db
+notify:
+  discord_webhook_url: ""
+  slack_webhook_url: ""
+  dashboard_url: http://localhost:7788
+sharepoint:
+  site_url: ""
+  tenant_id: ""
+  base_path: Shared Documents/Variants
+ai:
+  provider: gemini
+  gemini_api_key_env: GEMINI_API_KEY
+  variant_score_model: gemini-3-flash-preview
+  competitor_model: gemini-2.5-flash
+voiceover:
+  provider: elevenlabs
