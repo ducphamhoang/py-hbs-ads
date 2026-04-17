@@ -234,7 +234,9 @@ def test_pipeline_run_blocks_until_review_gate_then_completes(tmp_path, capsys) 
         assert (tmp_path / "VARIANTS" / name / "export" / f"{name}.mp4").exists()
 
 
-def test_sharepoint_setup_upload_and_download_create_local_transfer_artifacts(tmp_path, capsys) -> None:
+def test_sharepoint_setup_upload_and_download_create_local_transfer_artifacts(tmp_path, capsys, monkeypatch) -> None:
+    library_root = tmp_path / "video-library"
+    monkeypatch.setenv("VIDEO_LIBRARY_ROOT", str(library_root))
     _bootstrap_workspace(tmp_path)
     export_dir = tmp_path / "VARIANTS" / "launch-cut" / "export"
     export_dir.mkdir(parents=True, exist_ok=True)
@@ -286,9 +288,7 @@ def test_sharepoint_setup_upload_and_download_create_local_transfer_artifacts(tm
         / "launch-cut"
         / "launch-cut.mp4"
     ).exists()
-    assert (
-        tmp_path / "sharepoint" / "downloads" / "launch-cut" / "launch-cut.mp4"
-    ).exists()
+    assert (library_root / "raw" / "launch-cut" / "launch-cut.mp4").exists()
 
 
 def test_competitor_and_perf_reports_are_written_and_loaded(tmp_path, capsys) -> None:

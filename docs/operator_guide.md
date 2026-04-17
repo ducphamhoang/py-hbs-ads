@@ -110,6 +110,20 @@ hbs-ads --workspace /path/to/job notify render-done --variant sample
 hbs-ads --workspace /path/to/job voiceover generate --script "Buy now and save."
 ```
 
+## Shared Library
+
+The shared library (`~/work/video-library` by default) stores persistent assets across all jobs:
+
+```
+~/work/video-library/
+├── raw/                 ← SharePoint downloads, source footage
+├── trimmed/             ← Trimmed clips
+├── hooks/               ← Hook templates
+└── generated_variants/  ← Reusable variant JSON configs
+```
+
+Configure via `.env` (`VIDEO_LIBRARY_ROOT`) or `hbs-ads.yaml` (`library.root`). The workspace (`--workspace PATH`) is for **ephemeral job state** — raw assets and downloads belong in the library.
+
 ## JSON Output Contract
 
 Success payloads include:
@@ -182,6 +196,47 @@ hbs-ads --workspace /path/to/job sharepoint download --file-url "/path/to/file.m
 # Dry-run (preview without changes)
 hbs-ads --workspace /path/to/job sharepoint upload --file ... --variant sample --dry-run
 ```
+
+## Microsoft Teams Integration
+
+Teams chat support uses CLI for Microsoft 365 (`m365`) as a Graph wrapper.
+
+Required delegated Graph permissions on the Entra app used by `m365`:
+
+- `User.Read`
+- `Chat.ReadBasic` for listing chats
+- `Chat.Read` for reading chat messages
+- `ChatMessage.Send` for sending chat messages
+
+Configure a tenant/app when the default `m365` app does not have those scopes:
+
+```bash
+M365_TENANT_ID=your-tenant.onmicrosoft.com
+M365_TEAMS_APP_ID=00000000-0000-0000-0000-000000000000
+```
+
+Then run:
+
+```bash
+hbs-ads --workspace /path/to/job teams setup
+hbs-ads --workspace /path/to/job teams auth-check
+hbs-ads --workspace /path/to/job teams chats --top 10
+hbs-ads --workspace /path/to/job teams messages --chat-id <chat-id> --top 20
+hbs-ads --workspace /path/to/job teams send --chat-id <chat-id> --message "Can you review this cut?" --dry-run
+hbs-ads --workspace /path/to/job teams send --chat-id <chat-id> --message "Can you review this cut?"
+```
+
+Important: `m365 login` cannot add Teams scopes dynamically. The scopes must already be granted and consented on the Entra app registration used for login.
+
+For a temporary Graph Explorer proof of concept, export a short-lived Graph access token instead of using `m365`:
+
+```bash
+export HBS_ADS_GRAPH_ACCESS_TOKEN=<graph-explorer-access-token>
+hbs-ads --workspace /path/to/job --json teams chats --top 10
+hbs-ads --workspace /path/to/job --json teams messages --chat-id <chat-id> --top 10
+```
+
+The token is read from the environment only, is not written to `teams/setup.json`, and should not be committed or pasted into logs.
 
 ### Troubleshooting
 

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 from hbs_ads.app.settings import ResolvedSettings
-from hbs_ads.core.config import resolve_settings
+from hbs_ads.core.config import load_dotenv_file, resolve_settings
 from hbs_ads.core.workspace import WorkspaceManager
 from hbs_ads.features.assets.service import AssetsService
 from hbs_ads.features.bootstrap.service import BootstrapService
@@ -15,6 +16,7 @@ from hbs_ads.features.perf.service import PerfService
 from hbs_ads.features.pipeline.service import PipelineService
 from hbs_ads.features.sharepoint.service import SharePointService
 from hbs_ads.features.tagging.service import TaggingService
+from hbs_ads.features.teams.service import TeamsService
 from hbs_ads.features.trim.service import TrimService
 from hbs_ads.features.variants.service import VariantsService
 from hbs_ads.features.voiceover.service import VoiceoverService
@@ -22,6 +24,7 @@ from hbs_ads.infra.ai.gemini import GeminiClipAnalyzer
 from hbs_ads.infra.db.sqlite import SQLiteDatabase
 from hbs_ads.infra.exec.runner import CommandRunner
 from hbs_ads.infra.sharepoint import FileBackedSharePointClient, M365SharePointClient
+from hbs_ads.infra.teams import DirectGraphTeamsClient, M365TeamsClient
 
 
 @dataclass(slots=True)
@@ -38,6 +41,7 @@ class AppServices:
     hooks: HooksService
     pipeline: PipelineService
     sharepoint: SharePointService
+    teams: TeamsService
     competitor: CompetitorService
     perf: PerfService
     notify: NotifyService
@@ -75,6 +79,18 @@ def build_app(
     )
     hooks = HooksService(settings=settings, workspace=workspace, database=database)
     sharepoint = SharePointService(settings=settings, workspace=workspace, client=sharepoint_client)
+    graph_access_token = os.environ.get("HBS_ADS_GRAPH_ACCESS_TOKEN", "").strip()
+    if not graph_access_token:
+        graph_access_token = load_dotenv_file(settings.workspace.root / ".env").get("HBS_ADS_GRAPH_ACCESS_TOKEN", "").strip()
+    if graph_access_token:
+        teams_client = DirectGraphTeamsClient(settings=settings, access_token=graph_access_token)
+    else:
+        teams_client = M365TeamsClient(settings=settings, command_runner=command_runner)
+    teams = TeamsService(
+        settings=settings,
+        workspace=workspace,
+        client=teams_client,
+    )
     competitor = CompetitorService(settings=settings, workspace=workspace, database=database)
     perf = PerfService(settings=settings, workspace=workspace)
     notify = NotifyService(settings=settings, workspace=workspace)
@@ -103,6 +119,7 @@ def build_app(
         hooks=hooks,
         pipeline=pipeline,
         sharepoint=sharepoint,
+        teams=teams,
         competitor=competitor,
         perf=perf,
         notify=notify,

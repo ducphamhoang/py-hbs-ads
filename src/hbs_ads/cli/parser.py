@@ -29,6 +29,13 @@ from hbs_ads.features.tagging.service import (
     PendingTagsRequest,
     TagAIRequest,
 )
+from hbs_ads.features.teams.service import (
+    TeamsAuthCheckRequest,
+    TeamsListChatsRequest,
+    TeamsListMessagesRequest,
+    TeamsSendMessageRequest,
+    TeamsSetupRequest,
+)
 from hbs_ads.features.trim.service import TrimClipRequest, TrimRunRequest
 from hbs_ads.features.variants.service import (
     ArchiveVariantRequest,
@@ -342,12 +349,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sharepoint_list = sharepoint_sub.add_parser("list", help="List remote SharePoint files.")
     sharepoint_list.add_argument("--query", "--variant", dest="query", default="")
+    sharepoint_list.add_argument("--target", default="", help="SharePoint target folder (v100, v200, v300, v400). Auto-detected from query if omitted.")
     sharepoint_list.set_defaults(
         handler=_result(
             lambda args, app: app.sharepoint.list(
                 SharePointListRequest(
                     workspace_root=_workspace_path(args),
                     query=args.query,
+                    target=args.target or None,
                 )
             )
         )
@@ -371,6 +380,7 @@ def build_parser() -> argparse.ArgumentParser:
     sharepoint_download = sharepoint_sub.add_parser("download", help="Download from SharePoint.")
     sharepoint_download.add_argument("--variant", "--query", dest="variant", required=False, default="")
     sharepoint_download.add_argument("--file", dest="file_url", required=False, default="")
+    sharepoint_download.add_argument("--target", default="", help="SharePoint target folder (v100, v200, v300, v400). Auto-detected from variant if omitted.")
     sharepoint_download.add_argument("--dest", required=False, default="")
     _add_common_dry_run(sharepoint_download)
     sharepoint_download.set_defaults(
@@ -380,7 +390,62 @@ def build_parser() -> argparse.ArgumentParser:
                     workspace_root=_workspace_path(args),
                     variant=args.variant,
                     file_url=args.file_url,
+                    target=args.target or None,
                     destination_dir=Path(args.dest) if args.dest else None,
+                    dry_run=args.dry_run,
+                )
+            )
+        )
+    )
+
+    teams_parser = subparsers.add_parser("teams", help="Microsoft Teams chat workflows.")
+    teams_sub = teams_parser.add_subparsers(dest="action")
+    teams_setup = teams_sub.add_parser("setup", help="Authenticate m365 for Teams Graph access.")
+    teams_setup.set_defaults(
+        handler=_result(
+            lambda args, app: app.teams.setup(TeamsSetupRequest(workspace_root=_workspace_path(args)))
+        )
+    )
+    teams_auth_check = teams_sub.add_parser("auth-check", help="Verify Graph Teams chat access.")
+    teams_auth_check.set_defaults(
+        handler=_result(
+            lambda args, app: app.teams.auth_check(TeamsAuthCheckRequest(workspace_root=_workspace_path(args)))
+        )
+    )
+    teams_chats = teams_sub.add_parser("chats", help="List Teams 1:1 and group chats.")
+    teams_chats.add_argument("--top", type=int, default=10)
+    teams_chats.set_defaults(
+        handler=_result(
+            lambda args, app: app.teams.list_chats(
+                TeamsListChatsRequest(workspace_root=_workspace_path(args), top=args.top)
+            )
+        )
+    )
+    teams_messages = teams_sub.add_parser("messages", help="List messages for a Teams chat.")
+    teams_messages.add_argument("--chat-id", required=True)
+    teams_messages.add_argument("--top", type=int, default=20)
+    teams_messages.set_defaults(
+        handler=_result(
+            lambda args, app: app.teams.list_messages(
+                TeamsListMessagesRequest(
+                    workspace_root=_workspace_path(args),
+                    chat_id=args.chat_id,
+                    top=args.top,
+                )
+            )
+        )
+    )
+    teams_send = teams_sub.add_parser("send", help="Send a plain text message to a Teams chat.")
+    teams_send.add_argument("--chat-id", required=True)
+    teams_send.add_argument("--message", required=True)
+    _add_common_dry_run(teams_send)
+    teams_send.set_defaults(
+        handler=_result(
+            lambda args, app: app.teams.send_message(
+                TeamsSendMessageRequest(
+                    workspace_root=_workspace_path(args),
+                    chat_id=args.chat_id,
+                    message=args.message,
                     dry_run=args.dry_run,
                 )
             )

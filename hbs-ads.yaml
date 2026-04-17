@@ -1,5 +1,7 @@
 workspace:
   root: .
+library:
+  root: ~/work/video-library
 tools:
   ffmpeg: ffmpeg
   ffprobe: ffprobe
@@ -14,6 +16,11 @@ sharepoint:
   site_url: ""
   tenant_id: ""
   base_path: Shared Documents/Variants
+teams:
+  tenant_id: ""
+  app_id: ""
+  auth_type: deviceCode
+  required_scopes: User.Read,Chat.ReadBasic,Chat.Read,ChatMessage.Send
 ai:
   provider: gemini
   gemini_api_key_env: GEMINI_API_KEY

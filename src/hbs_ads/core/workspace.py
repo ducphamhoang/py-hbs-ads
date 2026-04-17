@@ -18,6 +18,7 @@ WORKSPACE_DIRS = [
     "docs",
     "reports",
     "sharepoint",
+    "teams",
     "voiceover",
 ]
 
@@ -38,6 +39,11 @@ sharepoint:
   site_url: ""
   tenant_id: ""
   base_path: Shared Documents/Variants
+teams:
+  tenant_id: ""
+  app_id: ""
+  auth_type: deviceCode
+  required_scopes: User.Read,Chat.ReadBasic,Chat.Read,ChatMessage.Send
 ai:
   provider: gemini
   gemini_api_key_env: GEMINI_API_KEY
@@ -67,6 +73,7 @@ class WorkspaceLayout:
     sharepoint_dir: Path
     sharepoint_library_dir: Path
     sharepoint_downloads_dir: Path
+    teams_dir: Path
     voiceover_dir: Path
     config_file: Path
     database_file: Path
@@ -93,6 +100,7 @@ class WorkspaceManager:
             sharepoint_dir=root / "sharepoint",
             sharepoint_library_dir=root / "sharepoint" / "library",
             sharepoint_downloads_dir=root / "sharepoint" / "downloads",
+            teams_dir=root / "teams",
             voiceover_dir=root / "voiceover",
             config_file=root / "hbs-ads.yaml",
             database_file=settings.database.path,
@@ -108,6 +116,7 @@ class WorkspaceManager:
         layout.perf_inbox_dir.mkdir(parents=True, exist_ok=True)
         layout.sharepoint_library_dir.mkdir(parents=True, exist_ok=True)
         layout.sharepoint_downloads_dir.mkdir(parents=True, exist_ok=True)
+        layout.teams_dir.mkdir(parents=True, exist_ok=True)
         layout.voiceover_dir.mkdir(parents=True, exist_ok=True)
         if not layout.config_file.exists():
             layout.config_file.write_text(DEFAULT_CONFIG_TEXT, encoding="utf-8")

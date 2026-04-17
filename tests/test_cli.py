@@ -28,6 +28,7 @@ def test_root_help_lists_documented_command_groups(capsys) -> None:
         "hooks",
         "pipeline",
         "sharepoint",
+        "teams",
         "competitor",
         "perf",
         "notify",
@@ -95,6 +96,69 @@ def test_notify_progress_supports_dry_run(capsys, tmp_path) -> None:
     assert exit_code == 0
     captured = capsys.readouterr()
     assert "notify progress planned" in captured.out
+
+
+def test_teams_send_supports_dry_run(capsys, tmp_path) -> None:
+    exit_code = main(
+        [
+            "--workspace",
+            str(tmp_path),
+            "teams",
+            "send",
+            "--chat-id",
+            "19:test@thread.v2",
+            "--message",
+            "review this cut",
+            "--dry-run",
+        ]
+    )
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "teams send planned" in captured.out
+
+
+def test_teams_uses_graph_token_env_for_dry_run(monkeypatch, capsys, tmp_path) -> None:
+    monkeypatch.setenv("HBS_ADS_GRAPH_ACCESS_TOKEN", "test-token")
+    exit_code = main(
+        [
+            "--workspace",
+            str(tmp_path),
+            "--json",
+            "teams",
+            "send",
+            "--chat-id",
+            "19:test@thread.v2",
+            "--message",
+            "review this cut",
+            "--dry-run",
+        ]
+    )
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["data"]["mode"] == "graph-token"
+    assert "test-token" not in json.dumps(payload)
+
+
+def test_teams_uses_graph_token_from_workspace_dotenv(capsys, tmp_path) -> None:
+    (tmp_path / ".env").write_text("HBS_ADS_GRAPH_ACCESS_TOKEN=dotenv-token\n", encoding="utf-8")
+    exit_code = main(
+        [
+            "--workspace",
+            str(tmp_path),
+            "--json",
+            "teams",
+            "send",
+            "--chat-id",
+            "19:test@thread.v2",
+            "--message",
+            "review this cut",
+            "--dry-run",
+        ]
+    )
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["data"]["mode"] == "graph-token"
+    assert "dotenv-token" not in json.dumps(payload)
 
 
 def test_json_output_alias_returns_machine_readable_payload(capsys, tmp_path) -> None:

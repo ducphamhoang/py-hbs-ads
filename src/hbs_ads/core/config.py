@@ -9,9 +9,11 @@ from typing import Any
 from hbs_ads.app.settings import (
     AISettings,
     DatabaseSettings,
+    LibrarySettings,
     NotifySettings,
     ResolvedSettings,
     SharePointSettings,
+    TeamsSettings,
     ToolSettings,
     VoiceoverSettings,
     WorkspaceSettings,
@@ -19,6 +21,7 @@ from hbs_ads.app.settings import (
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "workspace": {"root": "."},
+    "library": {"root": "~/work/video-library"},
     "tools": {"ffmpeg": "ffmpeg", "ffprobe": "ffprobe", "m365": "m365"},
     "database": {"path": "clips.db"},
     "notify": {
@@ -26,7 +29,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "slack_webhook_url": "",
         "dashboard_url": "http://localhost:7788",
     },
-    "sharepoint": {"site_url": "", "tenant_id": "", "base_path": "Shared Documents/Variants"},
+    "sharepoint": {"site_url": "", "tenant_id": "", "base_path": "Shared Documents/Variants", "base_path_v100": "", "base_path_v200": "", "base_path_v300": "", "base_path_v400": ""},
+    "teams": {
+        "tenant_id": "",
+        "app_id": "",
+        "auth_type": "deviceCode",
+        "required_scopes": "User.Read,Chat.ReadBasic,Chat.Read,ChatMessage.Send",
+    },
     "ai": {
         "provider": "gemini",
         "gemini_api_key_env": "GEMINI_API_KEY",
@@ -39,6 +48,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
 
 ENV_MAPPING = {
     "HBS_ADS_WORKSPACE_ROOT": ("workspace", "root"),
+    "HBS_ADS_LIBRARY_ROOT": ("library", "root"),
     "HBS_ADS_DATABASE_PATH": ("database", "path"),
     "HBS_ADS_TOOLS_FFMPEG": ("tools", "ffmpeg"),
     "HBS_ADS_TOOLS_FFPROBE": ("tools", "ffprobe"),
@@ -49,6 +59,10 @@ ENV_MAPPING = {
     "HBS_ADS_SHAREPOINT_SITE_URL": ("sharepoint", "site_url"),
     "HBS_ADS_SHAREPOINT_TENANT_ID": ("sharepoint", "tenant_id"),
     "HBS_ADS_SHAREPOINT_BASE_PATH": ("sharepoint", "base_path"),
+    "HBS_ADS_TEAMS_TENANT_ID": ("teams", "tenant_id"),
+    "HBS_ADS_TEAMS_APP_ID": ("teams", "app_id"),
+    "HBS_ADS_TEAMS_AUTH_TYPE": ("teams", "auth_type"),
+    "HBS_ADS_TEAMS_REQUIRED_SCOPES": ("teams", "required_scopes"),
     "HBS_ADS_AI_PROVIDER": ("ai", "provider"),
     "HBS_ADS_AI_GEMINI_API_KEY_ENV": ("ai", "gemini_api_key_env"),
     "HBS_ADS_AI_CLIP_ANALYSIS_MODEL": ("ai", "clip_analysis_model"),
@@ -59,8 +73,15 @@ ENV_MAPPING = {
     "SP_SITE_URL": ("sharepoint", "site_url"),
     "SP_TENANT_ID": ("sharepoint", "tenant_id"),
     "SP_BASE_PATH": ("sharepoint", "base_path"),
+    "SP_BASE_PATH_V100": ("sharepoint", "base_path_v100"),
+    "SP_BASE_PATH_V200": ("sharepoint", "base_path_v200"),
+    "SP_BASE_PATH_V300": ("sharepoint", "base_path_v300"),
+    "SP_BASE_PATH_V400": ("sharepoint", "base_path_v400"),
+    "M365_TENANT_ID": ("teams", "tenant_id"),
+    "M365_TEAMS_APP_ID": ("teams", "app_id"),
     "DISCORD_WEBHOOK_URL": ("notify", "discord_webhook_url"),
     "GEMINI_API_KEY": ("ai", "gemini_api_key_env"),
+    "VIDEO_LIBRARY_ROOT": ("library", "root"),
 }
 
 
@@ -196,12 +217,16 @@ def to_settings(config: dict[str, Any], output_mode: str) -> ResolvedSettings:
     if not database_path.is_absolute():
         database_path = workspace_root / database_path
 
+    library_root = Path(str(config["library"]["root"])).expanduser().resolve()
+
     return ResolvedSettings(
         workspace=WorkspaceSettings(root=workspace_root),
+        library=LibrarySettings(root=library_root),
         tools=ToolSettings(**config["tools"]),
         database=DatabaseSettings(path=database_path),
         notify=NotifySettings(**config["notify"]),
         sharepoint=SharePointSettings(**config["sharepoint"]),
+        teams=TeamsSettings(**config["teams"]),
         ai=AISettings(**config["ai"]),
         voiceover=VoiceoverSettings(**config["voiceover"]),
         output_mode=output_mode,

@@ -32,6 +32,22 @@ logs/
 generated_variants/
 sharepoint/
 
+# Operational / runtime data (ad assets, inbox, reports, voiceover)
+VARIANTS/
+_ASSETS/
+_HOOKS/
+_SEQUENCES/
+inbox/
+reports/
+voiceover/
+archive/
+
+# Root-level teams data (distinct from src/hbs_ads/features/teams/ source code)
+/teams/
+
+# Test cache
+.pytest_cache/
+
 # AI tooling (agent-specific, not project code)
 .claude/
 .codex/
