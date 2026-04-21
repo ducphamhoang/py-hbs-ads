@@ -113,19 +113,31 @@ These are valuable, but not blockers for agent-first V1:
 - perfect clustering quality
 - main-app bootstrap/CLI wiring
 
-## 5. Remaining gaps before we should call it done
+## 5. Current assessment: V1 done for the pilot scope
 
-As of this review, the main gaps are:
+As of the current pilot review, the practical V1 gaps called out earlier have been closed enough to treat V1 as done for the **agent-first pilot scope**.
 
-1. **State/readback still needs tightening**
-   - make sure parent agents can reliably reload prior analyses/artifacts/DB rows instead of only writing them
+### Closed from the earlier gap list
 
-2. **Review boundary needs to be stated cleanly**
-   - V1 currently has review primitives, not a full review workflow
-   - docs and handoff language should keep calling insights `draft` unless explicitly approved
+1. **State/readback tightened**
+   - parent agents can now reload run state, analyses, failures, insights, and reviews from artifacts and/or the pilot DB
+   - the pilot DB also exposes run-level readback for bounded inspection and reuse
 
-3. **Verification should stay centered on agent use cases**
-   - tests should emphasize fresh-export, re-synthesis, and one-asset debug flows
+2. **Review boundary stated more cleanly**
+   - run outputs and re-synthesis outputs explicitly surface draft/review status
+   - draft insight outputs remain draft unless explicit review transforms approve them
+
+3. **Verification centered on agent use cases**
+   - tests now cover fresh-export runs, re-synthesis from saved analyses, one-asset debug flow, invalid-analysis handling, and readback helpers
+
+### Remaining post-V1 improvement areas
+
+These are still worth improving, but they are **not blockers** for calling V1 done:
+
+- stronger concept-cluster heuristics beyond current diversity-aware representative selection
+- richer reviewed-output lifecycle and approval policy docs
+- more ergonomic cross-run querying/reporting surfaces
+- deeper browser collector integration
 
 ## 6. Recommended review question for the team
 

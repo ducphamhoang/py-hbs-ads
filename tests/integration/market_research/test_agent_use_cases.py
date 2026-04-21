@@ -183,3 +183,19 @@ def test_debug_asset_writes_explicit_failed_validation_artifact(tmp_path: Path) 
     payload = json.loads(debug_artifact.read_text(encoding='utf-8'))
     assert payload['analysis_status'] == 'failed_validation'
     assert payload['variant_cluster_id'] == 'vcl_debug'
+
+
+def test_readback_helpers_expose_run_and_analysis_state(tmp_path: Path) -> None:
+    service, artifact_root, initial_result = _build_service_with_completed_run(tmp_path)
+
+    analyses = service.load_analyses(run_id=initial_result['run_id'], from_db=True, analysis_status='ok')
+    runs = service.db.list_runs() if service.db is not None else []
+    run = service.db.get_run(initial_result['run_id']) if service.db is not None else None
+    failures = service.load_failures()
+
+    assert analyses
+    assert all(analysis.analysis_status == 'ok' for analysis in analyses)
+    assert run is not None
+    assert run['run_id'] == initial_result['run_id']
+    assert any(item['run_id'] == initial_result['run_id'] for item in runs)
+    assert failures == []

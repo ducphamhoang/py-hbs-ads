@@ -459,6 +459,13 @@ This is a persistence primitive, not a reasoning primitive.
 - `analyze(...)`
 - `enrich(...)`
 - `synthesize(...)`
+- `load_run_state(...)`
+- `load_failures(...)`
+- `load_analyses(...)`
+- `load_insights(...)`
+- `load_reviews(...)`
+- `debug_asset(...)`
+- `re_synthesize_from_saved_analyses(...)`
 - `review(...)`
 - `sync(...)`
 - `run(...)`

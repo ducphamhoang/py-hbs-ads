@@ -230,6 +230,8 @@ For any market research tool call, the parent should preserve:
 ### Parent should do next
 - inspect artifacts and counts
 - decide whether to stay stage-by-stage or use `run(...)` for smoke-test composition
+- use readback helpers for bounded reuse instead of forcing full reruns
+- use `debug_asset(...)` or `re_synthesize_from_saved_analyses(...)` when the task is one-asset debugging or brief-driven reuse
 
 ### Safe default
 - call stage methods explicitly during debugging; use `run(...)` mainly for smoke tests and bounded local runs
