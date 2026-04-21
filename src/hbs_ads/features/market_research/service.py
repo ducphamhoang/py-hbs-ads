@@ -21,6 +21,7 @@ from hbs_ads.features.market_research.models import (
     SyncReport,
     VariantCluster,
 )
+from hbs_ads.features.market_research.intake import intake_asset_files
 from hbs_ads.features.market_research.normalization import normalize_candidates
 from hbs_ads.features.market_research.review import batch_approve
 from hbs_ads.features.market_research.synthesis import synthesize_insights
@@ -99,9 +100,39 @@ class MarketResearchService:
         candidates = normalize_candidates(run_id, query_id, records)
         out = self.artifact_root / "collect" / "candidates.raw.json"
         _write_json(out, [asdict(c) for c in candidates])
-        manifest_out = self.artifact_root / "collect" / "assets-manifest.json"
-        _write_json(manifest_out, {"run_id": run_id, "source": str(manifest_path), "count": len(candidates)})
+        collect_root = self.artifact_root / "collect"
+        collect_root.mkdir(parents=True, exist_ok=True)
+        asset_manifest = raw_data.get("asset_manifest") if isinstance(raw_data, dict) else None
+        collection_report = raw_data.get("collection_report") if isinstance(raw_data, dict) else None
+        manifest_out = collect_root / "assets-manifest.json"
+        report_out = collect_root / "collection-report.json"
+        if asset_manifest is not None:
+            _write_json(manifest_out, asset_manifest)
+        else:
+            _write_json(manifest_out, {"run_id": run_id, "source": str(manifest_path), "count": len(candidates)})
+        if collection_report is not None:
+            _write_json(report_out, collection_report)
         return candidates
+
+    def intake_asset_files(
+        self,
+        *,
+        run_id: str,
+        asset_paths: list[Path],
+        source: str,
+        collector: str,
+        query_context: dict[str, Any] | None = None,
+        candidate_defaults: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        return intake_asset_files(
+            workspace_path=self.workspace,
+            run_id=run_id,
+            asset_paths=asset_paths,
+            source=source,
+            collector=collector,
+            query_context=query_context,
+            candidate_defaults=candidate_defaults,
+        )
 
     # ------------------------------------------------------------------ #
     # Stage: normalize                                                     #
@@ -522,8 +553,41 @@ class MarketResearchService:
     # Full run                                                             #
     # ------------------------------------------------------------------ #
 
+    def run_from_asset_files(
+        self,
+        request: MarketResearchRunRequest,
+        *,
+        asset_paths: list[Path],
+        source: str,
+        collector: str,
+        query_context: dict[str, Any] | None = None,
+        candidate_defaults: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        run_id = f"run_{request.brief.brief_id}_{uuid.uuid4().hex[:8]}"
+        intake_result = self.intake_asset_files(
+            run_id=run_id,
+            asset_paths=asset_paths,
+            source=source,
+            collector=collector,
+            query_context=query_context,
+            candidate_defaults={
+                **(candidate_defaults or {}),
+                "brief_id": request.brief.brief_id,
+            },
+        )
+        run_request = MarketResearchRunRequest(
+            brief=request.brief,
+            workspace_path=request.workspace_path,
+            manifest_path=intake_result["manifest_path"],
+            stage=request.stage,
+            operator=request.operator,
+        )
+        result = self.run(run_request)
+        result["intake_manifest_path"] = intake_result["manifest_path"]
+        result["intake_candidate_count"] = intake_result["candidate_count"]
+        return result
+
     def run(self, request: MarketResearchRunRequest) -> dict[str, Any]:
-        import uuid
         run_id = f"run_{request.brief.brief_id}_{uuid.uuid4().hex[:8]}"
         brief = request.brief
 

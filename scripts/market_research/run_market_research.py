@@ -51,19 +51,33 @@ def main() -> int:
     parser.add_argument(
         '--stage',
         default='run',
-        choices=['run', 'brief', 'resynthesize', 'debug-asset', 'inspect-run'],
+        choices=['run', 'brief', 'resynthesize', 'debug-asset', 'inspect-run', 'intake-files', 'intake-run'],
         help='Pilot stage to execute',
     )
     parser.add_argument('--source-run-id', default='', help='Existing run_id for readback/resynthesis/inspection')
     parser.add_argument('--asset-path', default='', help='Asset path for debug-asset stage')
+    parser.add_argument('--input-asset', action='append', default=[], help='Repeatable asset path for intake-files/intake-run stages')
     parser.add_argument('--asset-id', default='', help='Asset id for debug-asset stage')
     parser.add_argument('--variant-cluster-id', default='', help='Optional variant cluster id for debug-asset stage')
     parser.add_argument('--analysis-focus', default='', help='Comma-separated analysis focus for debug-asset stage')
+    parser.add_argument('--source', default='uploaded_asset', help='Logical intake source for intake-files/intake-run stages')
+    parser.add_argument('--collector', default='local-intake', help='Collector identity for intake-files/intake-run stages')
+    parser.add_argument('--platform', default='', help='Optional platform for intake-files/intake-run stages')
+    parser.add_argument('--geo', default='', help='Optional geo for intake-files/intake-run stages')
+    parser.add_argument('--app-name', default='', help='Optional app_name for intake-files/intake-run stages')
+    parser.add_argument('--publisher-name', default='', help='Optional publisher_name for intake-files/intake-run stages')
     args = parser.parse_args()
 
     workspace_root = Path(args.workspace).expanduser().resolve()
     brief_path = Path(args.brief).expanduser().resolve() if args.brief else None
     manifest_path = Path(args.manifest).expanduser().resolve() if args.manifest else None
+    input_assets = [Path(path).expanduser().resolve() for path in args.input_asset]
+    intake_defaults = {
+        'platform': args.platform,
+        'geo': args.geo,
+        'app_name': args.app_name,
+        'publisher_name': args.publisher_name,
+    }
 
     service = build_service(workspace_root)
     brief = _load_brief(brief_path) if brief_path else None
@@ -111,6 +125,40 @@ def main() -> int:
             'failures': service.load_failures(),
         }
         result = _result('ok', 'market research run inspected', **payload)
+    elif args.stage == 'intake-files':
+        if not input_assets:
+            raise ValueError('at least one --input-asset is required for stage=intake-files')
+        target_run_id = args.source_run_id or f"intake_{workspace_root.name}"
+        intake_result = service.intake_asset_files(
+            run_id=target_run_id,
+            asset_paths=input_assets,
+            source=args.source,
+            collector=args.collector,
+            query_context={'mode': 'manual_asset_intake'},
+            candidate_defaults=intake_defaults,
+        )
+        result = _result('ok', 'market research asset intake completed', **intake_result)
+    elif args.stage == 'intake-run':
+        if brief is None:
+            raise ValueError('--brief is required for stage=intake-run')
+        if not input_assets:
+            raise ValueError('at least one --input-asset is required for stage=intake-run')
+        run_result = service.run_from_asset_files(
+            MarketResearchRunRequest(
+                brief=brief,
+                workspace_path=str(workspace_root),
+                stage='all',
+                operator='runner',
+            ),
+            asset_paths=input_assets,
+            source=args.source,
+            collector=args.collector,
+            query_context={'mode': 'manual_asset_intake'},
+            candidate_defaults=intake_defaults,
+        )
+        payload = dict(run_result)
+        payload.pop('status', None)
+        result = _result('ok', 'market research intake run completed', **payload)
     else:
         if brief is None:
             raise ValueError('--brief is required for stage=run')

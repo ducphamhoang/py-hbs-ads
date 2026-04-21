@@ -35,6 +35,7 @@ These should be easy to test and safe for repeated use.
 ## Layer B — IO / infrastructure tools
 These perform external or persistence work.
 
+- asset-file intake / staged upload handoff
 - Gemini market research analyzer
 - SQLite research repository
 - artifact read/write helpers
@@ -228,7 +229,54 @@ Add lightweight context summaries around the sample and cluster set.
 
 ---
 
-## Tool 6 — Gemini market research analyzer
+## Tool 6 — Asset-file intake adapter
+
+### Canonical implementation path
+- `~/work/py-hbs-ads/src/hbs_ads/features/market_research/intake.py`
+- `~/work/py-hbs-ads/src/hbs_ads/features/market_research/service.py`
+- `~/work/py-hbs-ads/scripts/market_research/run_market_research.py`
+
+### Primary callable surfaces
+- `intake_asset_files(...) -> dict[str, Any]`
+- `MarketResearchService.intake_asset_files(...)`
+- `MarketResearchService.run_from_asset_files(...)`
+- runner stages: `intake-files`, `intake-run`
+
+### Purpose
+Turn one or more uploaded/local video files into a staged handoff manifest that the market research core can consume.
+
+### Inputs
+- workspace path
+- run id or generated run id
+- one or more local asset paths
+- intake metadata such as source / collector / platform / geo / app_name
+
+### Outputs
+- staged asset copies under workspace collect assets
+- `intake-manifest.json`
+- `assets-manifest.json`
+- `collection-report.json`
+- optional full market-research run result when using `run_from_asset_files(...)`
+
+### Side effects
+- copies files into the workspace
+- copies supported sidecar analysis fixtures when present
+- writes collect-stage artifacts
+
+### Agent use cases
+- take one or more videos uploaded through chat and analyze them with the market research stack
+- perform local asset intake without building browser collection first
+- create a clean handoff boundary between intake sources and research core
+
+### Review risk
+- medium
+
+### Notes
+This is the first non-browser intake adapter. Browser collection should target the same handoff contract instead of bypassing the intake boundary.
+
+---
+
+## Tool 7 — Gemini market research analyzer
 
 ### Canonical implementation path
 - `~/work/py-hbs-ads/src/hbs_ads/infra/ai/gemini_market_research.py`
