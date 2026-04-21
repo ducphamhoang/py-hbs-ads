@@ -1,0 +1,54 @@
+[
+  {
+    "insight_candidate_id": "inscand_hook_fail_then_win",
+    "run_id": "run_mr_2026_04_20_idle_us_hooks_abcd1234",
+    "insight_type": "pattern",
+    "title": "Hook pattern 'fail_then_win' appears in 3/5 analyzed ads",
+    "signal": "'fail_then_win' is one of the repeated hooks in this sample (3 occurrences out of 5).",
+    "evidence_summary": {
+      "supporting_asset_count": 3,
+      "sources": ["gemini"]
+    },
+    "scope": {
+      "geo": ["US"],
+      "platform": ["meta", "tiktok"],
+      "time_window": ["2026-04-01", "2026-04-20"]
+    },
+    "confidence": "medium",
+    "implication": "Consider testing 'fail_then_win' hooks if not already saturated in your own creatives.",
+    "evidence_refs": [
+      "analysis:analysis_asset_abc123",
+      "analysis:analysis_asset_def456",
+      "analysis:analysis_asset_ghi789"
+    ],
+    "needs_human_review": true,
+    "status": "draft",
+    "created_at": "2026-04-20T12:00:00Z"
+  },
+  {
+    "insight_candidate_id": "inscand_format_gameplay_plus_overlay",
+    "run_id": "run_mr_2026_04_20_idle_us_hooks_abcd1234",
+    "insight_type": "pattern",
+    "title": "Format 'gameplay_plus_overlay' dominates with 4/5 occurrences",
+    "signal": "'gameplay_plus_overlay' is the most common format in this sample segment.",
+    "evidence_summary": {
+      "supporting_asset_count": 4,
+      "sources": ["gemini"]
+    },
+    "scope": {
+      "geo": ["US"],
+      "platform": ["meta", "tiktok"]
+    },
+    "confidence": "high",
+    "implication": "Format 'gameplay_plus_overlay' appears prevalent. Evaluate differentiation opportunity.",
+    "evidence_refs": [
+      "analysis:analysis_asset_abc123",
+      "analysis:analysis_asset_def456",
+      "analysis:analysis_asset_ghi789",
+      "analysis:analysis_asset_jkl012"
+    ],
+    "needs_human_review": true,
+    "status": "draft",
+    "created_at": "2026-04-20T12:00:00Z"
+  }
+]

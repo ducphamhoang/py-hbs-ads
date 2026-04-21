@@ -1,0 +1,75 @@
+{
+  "schema_version": "creative-analysis/v1",
+  "asset_ref": "asset_abc123def456",
+  "observable": {
+    "duration_seconds": 28.5,
+    "aspect_ratio": "9:16",
+    "scene_count_estimate": 6,
+    "contains_gameplay": true,
+    "gameplay_visibility": "full",
+    "creator_presence": "none",
+    "character_presence": false,
+    "facecam_presence": false,
+    "device_frame_presence": false,
+    "text_overlay_present": true,
+    "text_overlay_summary": ["Your kingdom awaits!", "Level 99 reached", "Download now"],
+    "voiceover_type": null,
+    "audio_style": "upbeat",
+    "cta_present": true,
+    "cta_text": "Download now",
+    "cta_start_seconds": 22.0,
+    "cta_end_seconds": 28.5,
+    "offer_present": false,
+    "offer_summary": null,
+    "visual_notes": "Gameplay montage showing rapid resource accumulation and kingdom expansion. Large numbers appear on screen frequently."
+  },
+  "taxonomy_tags": {
+    "hook_type": "fail_then_win",
+    "format_type": "gameplay_plus_overlay",
+    "core_angle": "progression_reward",
+    "emotion_target": "satisfaction",
+    "visual_device": ["zoom_highlight", "big_numbers"],
+    "proof_type": "on_screen_result",
+    "cta_style": "direct_download",
+    "audience_hint": ["casual", "idle_players"],
+    "funnel_stage_guess": "prospecting"
+  },
+  "interpretation": {
+    "hypothesized_strategy": "Use visible rapid progression to promise low-friction reward loops for idle players.",
+    "why_it_might_work": [
+      "Immediate payoff shown within first 3 seconds",
+      "Large numbers create strong dopamine signaling",
+      "No complexity barrier — tap to win framing is clear"
+    ],
+    "likely_target_player": "Casual idle players who respond to visible progression and numeric rewards.",
+    "competitive_positioning_guess": "Competes on satisfying progression speed rather than depth or narrative.",
+    "novelty_assessment": "low"
+  },
+  "evidence": [
+    {
+      "type": "hook",
+      "start_seconds": 0.0,
+      "end_seconds": 3.0,
+      "note": "Kingdom shown in ruins at start, then rapid build-up begins immediately."
+    },
+    {
+      "type": "progression",
+      "start_seconds": 3.0,
+      "end_seconds": 18.0,
+      "note": "Resource counters increase rapidly with overlaid level-up text."
+    },
+    {
+      "type": "cta",
+      "start_seconds": 22.0,
+      "end_seconds": 28.5,
+      "note": "Download CTA appears over final kingdom showcase."
+    }
+  ],
+  "quality": {
+    "analysis_confidence": 0.85,
+    "needs_human_review": false,
+    "failure_modes": [],
+    "ocr_confidence": 0.78,
+    "timing_confidence": 0.87
+  }
+}

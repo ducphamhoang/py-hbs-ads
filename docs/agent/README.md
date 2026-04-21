@@ -18,6 +18,7 @@ These guides are implementation-facing instructions for AI agents or subagents t
 - `notion-media-scrum-policy.md`
 - `notion-media-scrum-routine.md`
 - `reusable-library-trim-workflow.md`
+- `creative-market-research/README.md`
 - `prompts/sharepoint-worker-template.md`
 - `prompts/analysis-worker-template.md`
 - `prompts/assembly-worker-template.md`

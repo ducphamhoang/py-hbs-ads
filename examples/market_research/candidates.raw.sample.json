@@ -1,0 +1,72 @@
+[
+  {
+    "source": "meta",
+    "source_record_id": "meta_ad_001",
+    "source_url": "https://example.com/ads/001",
+    "app_name": "Idle Kingdom Builder",
+    "publisher_name": "Studio Alpha",
+    "geo": "US",
+    "platform": "meta",
+    "first_seen_at": "2026-04-05",
+    "last_seen_at": "2026-04-18",
+    "asset_url": "",
+    "thumbnail_url": "",
+    "landing_url": "https://example.com/store/idle-kingdom"
+  },
+  {
+    "source": "meta",
+    "source_record_id": "meta_ad_002",
+    "source_url": "https://example.com/ads/002",
+    "app_name": "Idle Kingdom Builder",
+    "publisher_name": "Studio Alpha",
+    "geo": "US",
+    "platform": "meta",
+    "first_seen_at": "2026-04-08",
+    "last_seen_at": "2026-04-20",
+    "asset_url": "",
+    "thumbnail_url": "",
+    "landing_url": "https://example.com/store/idle-kingdom"
+  },
+  {
+    "source": "tiktok",
+    "source_record_id": "tt_ad_101",
+    "source_url": "https://example.com/ads/tt101",
+    "app_name": "Merge & Chill",
+    "publisher_name": "Studio Beta",
+    "geo": "US",
+    "platform": "tiktok",
+    "first_seen_at": "2026-04-10",
+    "last_seen_at": "2026-04-19",
+    "asset_url": "",
+    "thumbnail_url": "",
+    "landing_url": ""
+  },
+  {
+    "source": "tiktok",
+    "source_record_id": "tt_ad_102",
+    "source_url": "https://example.com/ads/tt102",
+    "app_name": "Merge & Chill",
+    "publisher_name": "Studio Beta",
+    "geo": "US",
+    "platform": "tiktok",
+    "first_seen_at": "2026-04-12",
+    "last_seen_at": "2026-04-20",
+    "asset_url": "",
+    "thumbnail_url": "",
+    "landing_url": ""
+  },
+  {
+    "source": "meta",
+    "source_record_id": "meta_ad_003",
+    "source_url": "https://example.com/ads/003",
+    "app_name": "Tap Tycoon Idle",
+    "publisher_name": "Studio Gamma",
+    "geo": "US",
+    "platform": "meta",
+    "first_seen_at": "2026-04-01",
+    "last_seen_at": "2026-04-15",
+    "asset_url": "",
+    "thumbnail_url": "",
+    "landing_url": ""
+  }
+]
