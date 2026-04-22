@@ -1,0 +1,57 @@
+{
+  "pending_prompt_id": "pp_sample_due_date_001",
+  "status": "open",
+  "created_at": "2026-04-20T15:45:00Z",
+  "updated_at": "2026-04-20T15:45:00Z",
+  "closed_at": null,
+  "source": {
+    "platform": "discord",
+    "chat_id": "1491765658759991561",
+    "thread_id": "1495697645052887090",
+    "channel_name": "#hbs-creative-sml"
+  },
+  "outbound_message": {
+    "assistant_message_id": "1496000000000000000",
+    "reply_to_message_id": null,
+    "text": "@ducph — task rough cut v1 của project Game teaser 03 chưa có due date. Trả lời YYYY-MM-DD giúp tao."
+  },
+  "target": {
+    "canonical_person_key": "ducph",
+    "platform": "discord",
+    "platform_user_id": "400303290174144512"
+  },
+  "notion": {
+    "project_id": "11111111-2222-3333-4444-555555555555",
+    "project_title": "Game teaser 03",
+    "task_id": "66666666-7777-8888-9999-000000000000",
+    "task_title": "rough cut v1"
+  },
+  "question": {
+    "question_type": "due_date_request",
+    "question_slot": "due_date",
+    "prompt_summary": "Ask ducph for due date for rough cut v1",
+    "expected_answer_shapes": [
+      "date"
+    ],
+    "allowed_update_types": [
+      "due_date_proposal",
+      "task_comment"
+    ],
+    "priority": "normal"
+  },
+  "resolution": {
+    "matched_inbound_message_id": null,
+    "matched_by": null,
+    "match_confidence": null,
+    "resolved_update_type": null,
+    "resolved_value": null,
+    "resolution_notes": null
+  },
+  "metadata": {
+    "tags": [
+      "sample",
+      "due-date"
+    ],
+    "expires_at": "2026-04-23T15:45:00Z"
+  }
+}

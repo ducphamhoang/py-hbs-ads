@@ -231,8 +231,19 @@ def build_report(project_rows: list[dict[str, Any]], task_rows: list[dict[str, A
         lines.append("- Project-level execution state still has trust issues because Status and Cal. Status disagree on some active projects.")
     else:
         lines.append("- Project-level status has been standardized for current active projects; the next trust problem is task-level hygiene, not project-level mismatch.")
-    lines.append("- Several active projects still do not have task-level execution detail linked in.")
-    lines.append("- Several active tasks are orphaned, unassigned, undated, or too vague to manage operationally.")
+    if counts["projects_without_tasks"] > 0:
+        lines.append("- Some active projects still do not have task-level execution detail linked in.")
+    else:
+        lines.append("- Current active projects all have linked task-level execution detail.")
+    if any([
+        counts["tasks_without_project"],
+        counts["tasks_without_owner"],
+        counts["tasks_without_due"],
+        counts["weak_named_tasks"],
+    ]):
+        lines.append("- Task-level hygiene is still the main operational risk: some active tasks are unassigned, undated, orphaned, or too vague.")
+    else:
+        lines.append("- Task-level hygiene is currently clean enough for operational reporting.")
     lines.append("")
     lines.append("## Next actions")
     lines.append("1. Choose one source of truth between Project Status and Cal. Status/rollups.")
