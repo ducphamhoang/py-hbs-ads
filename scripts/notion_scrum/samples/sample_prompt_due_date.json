@@ -6,19 +6,19 @@
   "closed_at": null,
   "source": {
     "platform": "discord",
-    "chat_id": "1491765658759991561",
-    "thread_id": "1495697645052887090",
+    "chat_id": "discord-channel-hbs-creative",
+    "thread_id": "discord-thread-game-teaser-03",
     "channel_name": "#hbs-creative-sml"
   },
   "outbound_message": {
-    "assistant_message_id": "1496000000000000000",
+    "assistant_message_id": "discord-msg-hermes-due-date-001",
     "reply_to_message_id": null,
     "text": "@ducph — task rough cut v1 của project Game teaser 03 chưa có due date. Trả lời YYYY-MM-DD giúp tao."
   },
   "target": {
     "canonical_person_key": "ducph",
     "platform": "discord",
-    "platform_user_id": "400303290174144512"
+    "platform_user_id": "discord-user-ducph"
   },
   "notion": {
     "project_id": "11111111-2222-3333-4444-555555555555",

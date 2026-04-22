@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "1970-01-01T00:00:00Z",
+  "people": {
+    "sample_owner": {
+      "canonical_person_key": "sample_owner",
+      "display_name": "Sample Owner",
+      "aliases": [
+        "sample_owner",
+        "Sample Owner"
+      ],
+      "role": "owner",
+      "notion": {
+        "people_page_id": null,
+        "user_id": null,
+        "display_name": null,
+        "email": null,
+        "mapping_confidence": "unresolved",
+        "mapping_source": "example"
+      },
+      "platform_identities": [
+        {
+          "platform": "discord",
+          "platform_user_id": "discord-user-sample-owner",
+          "platform_username": "sample_owner",
+          "display_names": [
+            "Sample Owner"
+          ]
+        }
+      ],
+      "status": "active",
+      "notes": "Replace this placeholder with the real operator-owned identity mapping."
+    }
+  },
+  "identity_index": {
+    "discord:discord-user-sample-owner": "sample_owner"
+  },
+  "pending_people": []
+}

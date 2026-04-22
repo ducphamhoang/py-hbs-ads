@@ -1,0 +1,8 @@
+# Live Hermes Discord <-> Notion Scrum state is operator-local.
+*
+
+# Keep policy docs and sanitized templates versioned.
+!.gitignore
+!README.md
+!*.example.json
+!*.example.jsonl

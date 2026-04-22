@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -39,13 +40,13 @@ def main() -> None:
         event_payload = json.loads((SAMPLES / "sample_event_due_date_reply.json").read_text(encoding="utf-8"))
 
         recorded = run_json([
-            "python", str(SCRIPT_DIR / "record_pending_prompt.py"),
+            sys.executable, str(SCRIPT_DIR / "record_pending_prompt.py"),
             "--state", str(prompts),
             "--audit-log", str(audit),
         ], prompt_obj)
 
         resolved = run_json([
-            "python", str(SCRIPT_DIR / "resolve_person.py"),
+            sys.executable, str(SCRIPT_DIR / "resolve_person.py"),
             "--platform", "discord",
             "--platform-user-id", event_payload["event"]["platform_user_id"],
             "--display-name", event_payload["event"].get("display_name", ""),
@@ -55,7 +56,7 @@ def main() -> None:
         event_payload["event"]["canonical_person_key"] = resolved.get("canonical_person_key")
 
         matched = run_json([
-            "python", str(SCRIPT_DIR / "match_inbound_reply.py"),
+            sys.executable, str(SCRIPT_DIR / "match_inbound_reply.py"),
             "--state", str(prompts),
             "--audit-log", str(audit),
         ], event_payload)
@@ -64,7 +65,7 @@ def main() -> None:
         prompt = next(p for p in state["prompts"] if p["pending_prompt_id"] == matched["pending_prompt_id"])
 
         planned = run_json([
-            "python", str(SCRIPT_DIR / "plan_notion_update.py"),
+            sys.executable, str(SCRIPT_DIR / "plan_notion_update.py"),
             "--audit-log", str(audit),
         ], {
             "prompt": prompt,
@@ -73,7 +74,7 @@ def main() -> None:
         })
 
         applied = run_json([
-            "python", str(SCRIPT_DIR / "apply_notion_update.py"),
+            sys.executable, str(SCRIPT_DIR / "apply_notion_update.py"),
             "--audit-log", str(audit),
         ], {
             "prompt": prompt,

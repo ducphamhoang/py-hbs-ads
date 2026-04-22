@@ -17,7 +17,7 @@
       "platform_identities": [
         {
           "platform": "discord",
-          "platform_user_id": "400303290174144512",
+          "platform_user_id": "discord-user-ducph",
           "platform_username": "ducph",
           "display_names": [
             "ducph"
@@ -29,6 +29,6 @@
     }
   },
   "identity_index": {
-    "discord:400303290174144512": "ducph"
+    "discord:discord-user-ducph": "ducph"
   }
 }

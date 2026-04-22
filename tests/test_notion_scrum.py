@@ -41,16 +41,16 @@ def _sample_registry(tmp_path: Path) -> Path:
                         "role": "owner",
                         "notion": {
                             "people_page_id": None,
-                            "user_id": "2c33dfad-20e7-45c5-a3d2-570048436c77",
+                            "user_id": "00000000-0000-4000-8000-000000000001",
                             "display_name": "DucPH",
-                            "email": "ducph@vng.com.vn",
+                            "email": "ducph@example.invalid",
                             "mapping_confidence": "high",
                             "mapping_source": "test fixture",
                         },
                         "platform_identities": [
                             {
                                 "platform": "discord",
-                                "platform_user_id": "400303290174144512",
+                                "platform_user_id": "discord-user-ducph",
                                 "platform_username": "ducph",
                                 "display_names": ["ducph"],
                             }
@@ -59,16 +59,16 @@ def _sample_registry(tmp_path: Path) -> Path:
                         "notes": "fixture",
                     }
                 },
-                "identity_index": {"discord:400303290174144512": "ducph"},
+                "identity_index": {"discord:discord-user-ducph": "ducph"},
                 "pending_people": [
                     {
                         "canonical_person_key": "po",
                         "status": "awaiting_discord_identity",
                         "notion_candidates": [
                             {
-                                "user_id": "2a752451-8c6b-44e6-a064-f3a483e07b64",
+                                "user_id": "00000000-0000-4000-8000-000000000002",
                                 "display_name": "Po (myntt7)",
-                                "email": "nt.thminh039@gmail.com",
+                                "email": "po@example.invalid",
                             }
                         ],
                     }
@@ -87,7 +87,7 @@ def test_build_comment_text_uses_registry_backed_notion_identity(tmp_path: Path)
     prompt = {"notion": {"task_title": "rough cut v1"}}
     event = {
         "platform": "discord",
-        "platform_user_id": "400303290174144512",
+        "platform_user_id": "discord-user-ducph",
         "canonical_person_key": "ducph",
         "display_name": "ducph",
         "text": "2026-04-22",
@@ -158,7 +158,7 @@ def test_person_resolution_fallback_order_and_pending_candidates(tmp_path: Path)
     registry_path = _sample_registry(tmp_path)
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
 
-    person = person_resolution.resolve_platform_identity(registry, "discord", "400303290174144512")
+    person = person_resolution.resolve_platform_identity(registry, "discord", "discord-user-ducph")
     assert person["canonical_person_key"] == "ducph"
     assert person_resolution.get_canonical_person(registry, "missing") is None
     assert person_resolution.get_pending_candidates(registry)[0]["canonical_person_key"] == "po"
@@ -188,7 +188,7 @@ def test_build_actions_includes_registry_identity_metadata(tmp_path: Path) -> No
     }
     event = {
         "platform": "discord",
-        "platform_user_id": "400303290174144512",
+        "platform_user_id": "discord-user-ducph",
         "canonical_person_key": "ducph",
         "display_name": "ducph",
         "text": "2026-04-22",
@@ -216,15 +216,15 @@ def test_build_actions_uses_project_id_when_task_id_missing(tmp_path: Path) -> N
     }
     event = {
         "platform": "discord",
-        "platform_user_id": "400303290174144512",
+        "platform_user_id": "discord-user-ducph",
         "canonical_person_key": "ducph",
         "display_name": "ducph",
-        "text": "confirm_dod | notion_email=ducplc@vng.com.vn | write=yes",
+        "text": "confirm_dod | notion_email=ducplc@example.invalid | write=yes",
     }
     plan = {
         "safe_to_apply": True,
         "resolved_update_type": "task_comment",
-        "resolved_value": "confirm_dod | notion_email=ducplc@vng.com.vn | write=yes",
+        "resolved_value": "confirm_dod | notion_email=ducplc@example.invalid | write=yes",
         "task_id": None,
         "project_id": "project-123",
     }
@@ -235,7 +235,7 @@ def test_build_actions_uses_project_id_when_task_id_missing(tmp_path: Path) -> N
         {
             "action": "append_block_comment",
             "block_id": "project-123",
-            "text": "[Hermes Scrum] Reply from DucPH (ducph) on [AI] Improve Virtual AI Tester - part 3: confirm_dod | notion_email=ducplc@vng.com.vn | write=yes",
+            "text": "[Hermes Scrum] Reply from DucPH (ducph) on [AI] Improve Virtual AI Tester - part 3: confirm_dod | notion_email=ducplc@example.invalid | write=yes",
         }
     ]
 
@@ -251,7 +251,7 @@ def test_lookup_notion_person_returns_registry_mapping(tmp_path: Path) -> None:
     assert result["resolved"] is True
     assert result["mapping_source"] == "registry"
     assert result["notion"]["display_name"] == "DucPH"
-    assert result["notion"]["user_id"] == "2c33dfad-20e7-45c5-a3d2-570048436c77"
+    assert result["notion"]["user_id"] == "00000000-0000-4000-8000-000000000001"
 
 
 def test_lookup_notion_person_returns_pending_candidates_when_not_mapped(tmp_path: Path) -> None:
@@ -286,7 +286,7 @@ def test_lookup_notion_person_preserves_pending_candidates_for_identity_linked_b
         "platform_identities": [
             {
                 "platform": "discord",
-                "platform_user_id": "1496370461918105740",
+                "platform_user_id": "discord-user-ducplc",
                 "platform_username": "ducplc",
                 "display_names": ["duc phan", "ducplc"],
             }
@@ -294,16 +294,16 @@ def test_lookup_notion_person_preserves_pending_candidates_for_identity_linked_b
         "status": "active",
         "notes": "fixture",
     }
-    data["identity_index"]["discord:1496370461918105740"] = "ducplc"
+    data["identity_index"]["discord:discord-user-ducplc"] = "ducplc"
     data["pending_people"].append(
         {
             "canonical_person_key": "ducplc",
             "status": "awaiting_notion_disambiguation",
             "notion_candidates": [
                 {
-                    "user_id": "287d872b-594c-81b8-ba4d-00028fc149b9",
+                    "user_id": "00000000-0000-4000-8000-000000000003",
                     "display_name": "duc phan",
-                    "email": "ducplc@vng.com.vn",
+                    "email": "ducplc@example.invalid",
                 }
             ],
             "notes": "fixture",
@@ -313,14 +313,14 @@ def test_lookup_notion_person_preserves_pending_candidates_for_identity_linked_b
 
     result = lookup_notion_person.lookup_person(
         platform="discord",
-        platform_user_id="1496370461918105740",
+        platform_user_id="discord-user-ducplc",
         registry_path=registry,
     )
 
     assert result["resolved"] is False
     assert result["mapping_source"] == "registry"
     assert result["canonical_person_key"] == "ducplc"
-    assert result["candidates"][0]["email"] == "ducplc@vng.com.vn"
+    assert result["candidates"][0]["email"] == "ducplc@example.invalid"
 
 
 def _sample_prompt() -> dict:
@@ -340,7 +340,7 @@ def _sample_event() -> dict:
     return {
         "platform": "discord",
         "thread_id": "thread-1",
-        "platform_user_id": "400303290174144512",
+        "platform_user_id": "discord-user-ducph",
         "canonical_person_key": "ducph",
         "display_name": "ducph",
         "reply_to_message_id": "assistant-1",
@@ -471,7 +471,7 @@ def test_match_reply_matches_listed_choice_from_prompt_text() -> None:
         "target": {"canonical_person_key": "ducplc"},
         "outbound_message": {
             "assistant_message_id": None,
-            "text": "@DucPLC — project [AI] Improve Virtual AI Tester - part 3: trả lời đúng 1 dòng theo format: confirm_dod | notion_email=<ducplc@vng.com.vn hoặc vng.gst.ducplc@gmail.com> | write=yes",
+            "text": "@DucPLC — project [AI] Improve Virtual AI Tester - part 3: trả lời đúng 1 dòng theo format: confirm_dod | notion_email=<ducplc@example.invalid hoặc alternate.ducplc@example.invalid> | write=yes",
         },
         "notion": {"project_title": "[AI] Improve Virtual AI Tester - part 3"},
         "question": {"allowed_update_types": ["task_comment"]},
@@ -479,10 +479,10 @@ def test_match_reply_matches_listed_choice_from_prompt_text() -> None:
     event = {
         "platform": "discord",
         "thread_id": "thread-1",
-        "platform_user_id": "1496370461918105740",
+        "platform_user_id": "discord-user-ducplc",
         "canonical_person_key": "ducplc",
         "display_name": "DucPLC",
-        "text": "ducplc@vng.com.vn",
+        "text": "ducplc@example.invalid",
     }
 
     result = match_inbound_reply.match_reply(event=event, prompts=[prompt])

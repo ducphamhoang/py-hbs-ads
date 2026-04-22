@@ -71,7 +71,7 @@ Maps platform identities to canonical people and Notion targets.
       "platform_identities": [
         {
           "platform": "discord",
-          "platform_user_id": "400303290174144512",
+          "platform_user_id": "discord-user-ducph",
           "platform_username": "duc",
           "display_names": ["Duc", "Đức"]
         }
@@ -81,7 +81,7 @@ Maps platform identities to canonical people and Notion targets.
     }
   },
   "identity_index": {
-    "discord:400303290174144512": "duc"
+    "discord:discord-user-ducph": "duc"
   }
 }
 ```
@@ -147,20 +147,20 @@ Tracks open and resolved follow-up questions issued by Hermes.
       "closed_at": null,
       "source": {
         "platform": "discord",
-        "chat_id": "1491765658759991561",
-        "thread_id": "1495697645052887090",
+        "chat_id": "discord-channel-hbs-creative",
+        "thread_id": "discord-thread-game-teaser-03",
         "channel_name": "#hbs-creative-sml",
         "session_key": "optional-session-key"
       },
       "outbound_message": {
-        "assistant_message_id": "1496000000000000000",
+        "assistant_message_id": "discord-msg-hermes-due-date-001",
         "reply_to_message_id": null,
         "text": "@Ma — task rough cut v1 chưa có due date. Mày muốn để ngày nào?"
       },
       "target": {
         "canonical_person_key": "ma",
         "platform": "discord",
-        "platform_user_id": "1489176949271035984"
+        "platform_user_id": "discord-user-ma"
       },
       "notion": {
         "project_id": "11111111-2222-3333-4444-555555555555",
