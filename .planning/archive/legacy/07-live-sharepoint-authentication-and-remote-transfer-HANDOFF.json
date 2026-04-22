@@ -1,0 +1,71 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-08T06:58:18.087Z",
+  "phase": "07",
+  "phase_name": "live-sharepoint-authentication-and-remote-transfer",
+  "phase_dir": ".planning/phases/07-live-sharepoint-authentication-and-remote-transfer",
+  "plan": 1,
+  "task": 2,
+  "total_tasks": 3,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "Phase 7 scope and parity context",
+      "status": "done",
+      "commit": ""
+    },
+    {
+      "id": 2,
+      "name": "SharePoint architecture and implementation skeleton",
+      "status": "done",
+      "progress": "Added infra sharepoint client seam, refactored feature service to use client, extended CLI commands, and wired client selection in bootstrap. Fixed download destination directory resolution to use sharepoint_downloads_dir when no explicit destination is provided. All 19 focused workflow/CLI tests pass, 7 broader foundation/output tests pass, compile check passes."
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 3,
+      "name": "Tests, verification, docs summary, and graph rebuild",
+      "status": "in_progress"
+    }
+  ],
+  "blockers": [],
+  "human_actions_pending": [
+    {
+      "action": "Provide real SharePoint tenant credentials and run live auth rehearsal later",
+      "context": "Live path uses m365 CLI + tenant values and cannot be fully validated in CI.",
+      "blocking": false
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep SharePointService as feature boundary and move provider logic into infra adapters.",
+      "rationale": "Preserves feature-first architecture and testability while adding live tenant support.",
+      "phase": "07"
+    },
+    {
+      "decision": "Preserve file-backed mode as default fallback when site_url/tenant_id are absent.",
+      "rationale": "Maintains deterministic offline behavior and existing test compatibility.",
+      "phase": "07"
+    },
+    {
+      "decision": "Extend existing sharepoint CLI group with list and exact-file download options.",
+      "rationale": "Matches legacy operator workflow without introducing a separate command family.",
+      "phase": "07"
+    }
+  ],
+  "uncommitted_files": [
+    ".planning/REQUIREMENTS.md",
+    ".planning/ROADMAP.md",
+    ".planning/STATE.md",
+    ".planning/phases/07-live-sharepoint-authentication-and-remote-transfer/07-CONTEXT.md",
+    ".planning/phases/07-live-sharepoint-authentication-and-remote-transfer/07-01-PLAN.md",
+    "src/hbs_ads/app/bootstrap.py",
+    "src/hbs_ads/cli/parser.py",
+    "src/hbs_ads/features/sharepoint/service.py",
+    "src/hbs_ads/infra/sharepoint/__init__.py",
+    "src/hbs_ads/infra/sharepoint/client.py"
+  ],
+  "next_action": "Rebuild graphify using scripts/rebuild-graphify.sh (if it exists) or `python3 -m graphify .` from /home/brewuser/work/py-hbs-ads",
+  "context_notes": "Phase 7 testing complete: all 19 focused workflow/CLI tests pass, all 7 foundation/output tests pass, all code compiles cleanly. Fixed download destination directory resolution. Ready for graph rebuild and final documentation."
+}
