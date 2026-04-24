@@ -17,7 +17,7 @@
 - [ ] **Phase 11: People-State Schema, Store, and Contracts** - Define the staffing data model, implement the shared store module, bootstrap the state file, extend result contracts, and establish test coverage.
 - [ ] **Phase 12: Operator CLI Write and Query Surface** - Build the guarded `update_people_state.py` write path and the read-only `query_people_state.py` query surface.
 - [ ] **Phase 13: Staffing Snapshot Derivation and Preflight Extensions** - Implement `build_staffing_snapshot.py` to derive the merged snapshot and extend preflight with people-state integrity checks.
-- [ ] **Phase 14: Staffing Risk Module and Follow-Up Routing** - Implement staffing risk detection and the effective follow-up routing helpers.
+- [x] **Phase 14: Staffing Risk Module and Follow-Up Routing** - Implement staffing risk detection and the effective follow-up routing helpers. (completed 2026-04-24)
 - [ ] **Phase 15: Daily Board Report Staffing Sections and Backward-Compat Guard** - Extend the daily board report with staffing-aware output while preserving board-only fallback.
 - [ ] **Phase 16: Skill and Documentation Updates** - Update the Hermes skill and supporting docs to explain the three-layer state model.
 
@@ -111,7 +111,7 @@ Plans:
 | 11. People-State Schema, Store, and Contracts | 3/3 | Complete    | 2026-04-24 |
 | 12. Operator CLI Write and Query Surface | 0/TBD | Not started | - |
 | 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
-| 14. Staffing Risk Module and Follow-Up Routing | 1/2 | In Progress|  |
+| 14. Staffing Risk Module and Follow-Up Routing | 2/2 | Complete   | 2026-04-24 |
 | 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 0/TBD | Not started | - |
 | 16. Skill and Documentation Updates | 0/TBD | Not started | - |
 
