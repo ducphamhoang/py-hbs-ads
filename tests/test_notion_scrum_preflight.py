@@ -44,9 +44,14 @@ def _write_registry(tmp_path: Path) -> Path:
 
 
 def _write_empty_prompts(tmp_path: Path) -> Path:
-    """Write an empty pending_prompts.json."""
+    """Write an empty pending_prompts.json in the expected container format."""
+    container = {
+        "schema_version": "1.0",
+        "updated_at": "2026-04-24T00:00:00Z",
+        "prompts": [],
+    }
     path = tmp_path / "pending_prompts.json"
-    path.write_text("[]", encoding="utf-8")
+    path.write_text(json.dumps(container, indent=2), encoding="utf-8")
     return path
 
 
