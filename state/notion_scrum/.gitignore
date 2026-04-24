@@ -6,3 +6,6 @@
 !README.md
 !*.example.json
 !*.example.jsonl
+
+# Bootstrap empty-container — committed as the canonical starting point for fresh installs.
+!people_state.json
