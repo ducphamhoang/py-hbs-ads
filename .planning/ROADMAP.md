@@ -93,7 +93,11 @@ Plans:
   2. Report includes staffing sections covering: people on leave or unusual availability, tasks with absent owners, projects with absent owners and no backup, and overloaded owners.
   3. Action lines mention the backup person (via registry Discord mention token) when the owner is absent and a backup is configured.
   4. Existing board-only daily report invocation continues to work without `people_state.json` present — staffing sections are skipped and no crash occurs.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 15-01-PLAN.md — TDD RED phase: failing tests for RPT-01, RPT-02, RPT-03, COMPAT-01
+- [ ] 15-02-PLAN.md — GREEN phase: build_report() snapshot loading + format_daily_check_message() staffing sections
 
 ### Phase 16: Skill and Documentation Updates
 **Goal**: The Hermes skill and supporting documentation accurately describe the three-layer state model, staffing-aware operator commands, routing rules, and daily report expectations so agents and operators have correct runtime guidance.
