@@ -297,3 +297,38 @@ Two distinct backup fields exist in each person record:
 - `coordination.backup_person_key` — standing policy-level routing target. Used regardless of whether the person is currently on leave. Set via `--action set_backup --backup <alias>`.
 
 Both fields accept canonical person keys validated against `team_registry.json`.
+
+## 11. Staffing Risk Categories
+
+`staffing_risk.py` detects five categories of staffing risk from the snapshot. These are detection flags only — the risk module does not modify Notion task or project ownership. Risk findings are surfaced in the daily board report when a staffing snapshot is present.
+
+1. **Absent-owner tasks** — Tasks assigned to owners whose `availability_status` is `leave` or `ooo`. These tasks need follow-up routed to a backup or flagged for escalation.
+
+2. **Absent-owner projects** — Projects whose owners are on leave or OOO. The `project_effective_owners` map in the snapshot reflects the backup substitution for each such project.
+
+3. **No-backup coverage** — Absent owners (`leave` or `ooo`) with no `backup_person_key` configured. These require human escalation — there is no automatic routing target. Reported as "escalation-needed".
+
+4. **Overloaded owners** — Owners with `active_projects >= 3` OR `active_tasks >= 8`. Active counts are derived from the board snapshot and stored in the snapshot's per-person record.
+
+5. **Reduced-bandwidth overdue** — Owners whose `availability_status` is `active` but whose `capacity.bandwidth` is `reduced` or `limited`, and who have overdue items. Reduced bandwidth combined with overdue items is a compounding workload risk.
+
+## 12. Daily Report Integration
+
+`daily_board_report.py` conditionally loads `cache/staffing_snapshot.json` to generate staffing-aware sections alongside the standard board output.
+
+### When the snapshot is present and fresh
+
+The report includes the following staffing sections:
+
+- **People on leave or unusual availability** — Lists everyone whose status is `leave`, `ooo`, `partial`, or `unknown`.
+- **Tasks with absent owners** — Lists tasks from risk category 1 (absent-owner tasks).
+- **Projects with absent owners and no backup** — Lists projects from risk categories 2 and 3.
+- **Overloaded owners** — Lists people from risk category 4.
+
+Action lines in these sections mention the backup person using the registry Discord mention token (e.g. `<@discord_user_id>`) when a backup is configured.
+
+### When the snapshot is absent or stale
+
+The report falls back to board-only mode with a warning logged to output. Staffing sections are silently skipped. No crash or error occurs.
+
+This is a valid operational state — not an error. Operators running board-only workflows (before running `build_staffing_snapshot.py`) are not blocked. The board-only invocation path is preserved as a first-class operational mode.
