@@ -370,6 +370,62 @@ def format_daily_check_message(
 
     if warning_lines:
         lines.extend(["", "**Cảnh báo theo project**", *warning_lines])
+
+    # ── Staffing sections (RPT-02, RPT-03) ──────────────────────────────
+    staffing_risks = report.get("staffing_risks")
+    if staffing_risks:
+        risks = staffing_risks.get("risks", {})
+
+        # Section: absent owners WITH backup
+        absent_with_backup = [t for t in risks.get("absent_owner_tasks", []) if t.get("backup_key")]
+        absent_no_backup_keys = {p["person_key"] for p in risks.get("absent_no_backup", [])}
+        # Also projects absent with no backup
+        absent_projects_no_backup = [
+            p for p in risks.get("absent_owner_projects", [])
+            if p.get("owner_key") in absent_no_backup_keys
+        ]
+
+        if absent_with_backup:
+            lines.append("")
+            lines.append("**Nhân sự vắng mặt / có backup**")
+            for item in absent_with_backup:
+                owner_label = _owner_label(
+                    [item["owner_key"]],
+                    discord_identity_by_person,
+                    [],
+                    mention_style=mention_style,
+                )
+                backup_label = _owner_label(
+                    [item["backup_key"]],
+                    discord_identity_by_person,
+                    [],
+                    mention_style="token",
+                )
+                lines.append(f"- {owner_label} (owner task **{item['task_title']}**) → backup: {backup_label}")
+
+        if risks.get("absent_no_backup"):
+            lines.append("")
+            lines.append("**Nhân sự vắng mặt / không có backup — cần escalation**")
+            for item in risks["absent_no_backup"]:
+                lines.append(f"- {item['display_name']} (chưa có backup, cần chỉ định)")
+
+        if risks.get("overloaded_owners"):
+            lines.append("")
+            lines.append("**Nhân sự quá tải**")
+            for item in risks["overloaded_owners"]:
+                lines.append(
+                    f"- {item['display_name']}: {item['active_projects']} projects, {item['active_tasks']} tasks"
+                )
+
+        if risks.get("reduced_bandwidth_with_overdue"):
+            lines.append("")
+            lines.append("**Nhân sự bandwidth thấp với task overdue**")
+            for item in risks["reduced_bandwidth_with_overdue"]:
+                pct = int(item.get("bandwidth", 0) * 100)
+                lines.append(
+                    f"- {item['display_name']} (bandwidth {pct}%): {item['overdue_tasks']} task overdue"
+                )
+
     return "\n".join(lines)
 
 
