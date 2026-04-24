@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
 status: planning
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-04-24T17:10:25.025Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-04-24T18:01:09.370Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 6
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  completed_phases: 6
+  total_plans: 15
+  completed_plans: 15
   percent: 33
 ---
 
@@ -50,6 +50,8 @@ Progress: [##########] v1.0 complete | [##########] v2.0 complete | [###░░�
 *Updated after each plan completion*
 | Phase 15 P01 | 5min | 1 tasks | 1 files |
 | Phase 15 P02 | 4min | 2 tasks | 1 files |
+| Phase 16-skill-and-documentation-updates P01 | 8min | 2 tasks | 1 files |
+| Phase 16 P02 | 5min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -65,6 +67,7 @@ Current decisions affecting v3.0:
 - Prompt-driven leave intake via Discord is explicitly out of scope for v3.0.
 - Staffing snapshot (`staffing_snapshot.json`) is a standalone derived artifact, not embedded in `daily_board_report.py`.
 - [Phase 14]: TDD RED: tests assert on expected dict structure (not pytest.raises) so all 10 show as FAILED in RED phase
+- [Phase 16-01]: §17 appended as new section to Hermes skill spec covering all v3.0 staffing additions (DOCS-02)
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ Current decisions affecting v3.0:
 
 ## Session Continuity
 
-Last session: 2026-04-24T17:06:57.034Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-04-24T18:01:03.971Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None

@@ -19,7 +19,7 @@
 - [ ] **Phase 13: Staffing Snapshot Derivation and Preflight Extensions** - Implement `build_staffing_snapshot.py` to derive the merged snapshot and extend preflight with people-state integrity checks.
 - [x] **Phase 14: Staffing Risk Module and Follow-Up Routing** - Implement staffing risk detection and the effective follow-up routing helpers. (completed 2026-04-24)
 - [x] **Phase 15: Daily Board Report Staffing Sections and Backward-Compat Guard** - Extend the daily board report with staffing-aware output while preserving board-only fallback. (completed 2026-04-24)
-- [ ] **Phase 16: Skill and Documentation Updates** - Update the Hermes skill and supporting docs to explain the three-layer state model.
+- [x] **Phase 16: Skill and Documentation Updates** - Update the Hermes skill and supporting docs to explain the three-layer state model. (completed 2026-04-24)
 
 ## Phase Details
 
@@ -121,7 +121,7 @@ Plans:
 | 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
 | 14. Staffing Risk Module and Follow-Up Routing | 2/2 | Complete    | 2026-04-24 |
 | 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 2/2 | Complete    | 2026-04-24 |
-| 16. Skill and Documentation Updates | 0/TBD | Not started | - |
+| 16. Skill and Documentation Updates | 2/2 | Complete   | 2026-04-24 |
 
 ## Completed Phase History
 

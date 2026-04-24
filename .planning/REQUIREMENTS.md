@@ -72,8 +72,8 @@
 
 ### DOCS — Skill and documentation updates
 
-- [ ] **DOCS-01**: `docs/agent/hermes-discord-notion-scrum-staffing-state-schema.md` created with canonical JSON structure for availability, capacity, coordination, and source blocks.
-- [ ] **DOCS-02**: Hermes `discord-notion-scrum-attribution` skill updated with three-layer state model, staffing-aware coordination goals, operator commands, routing rules, and daily report expectations.
+- [x] **DOCS-01**: `docs/agent/hermes-discord-notion-scrum-staffing-state-schema.md` created with canonical JSON structure for availability, capacity, coordination, and source blocks.
+- [x] **DOCS-02**: Hermes `discord-notion-scrum-attribution` skill updated with three-layer state model, staffing-aware coordination goals, operator commands, routing rules, and daily report expectations.
 
 ---
 
@@ -142,8 +142,8 @@
 | RPT-02 | Phase 15 | Complete |
 | RPT-03 | Phase 15 | Complete |
 | COMPAT-01 | Phase 15 | Complete |
-| DOCS-01 | Phase 16 | Pending |
-| DOCS-02 | Phase 16 | Pending |
+| DOCS-01 | Phase 16 | Complete |
+| DOCS-02 | Phase 16 | Complete |
 
 **Coverage:**
 - v3.0 requirements: 38 total
