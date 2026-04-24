@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: null
-milestone_name: null
-status: between_milestones
-stopped_at: v2.0 milestone archived
-last_updated: "2026-04-22T09:10:00Z"
-last_activity: 2026-04-22 — v2.0 Hermes Discord Notion Scrum milestone completed and archived
+milestone: v3.0
+milestone_name: Staffing-Aware Discord↔Notion Scrum
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-04-24T00:00:00Z"
+last_activity: 2026-04-24 — Milestone v3.0 started
 progress:
   total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
-  percent: 100
+  percent: 0
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-04-22)
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: v2.0 milestone complete
-Last activity: 2026-04-22 — v2.0 archived
+Status: Defining requirements
+Last activity: 2026-04-24 — Milestone v3.0 started
 
-Progress: [##########] v1.0 complete | [##########] v2.0 complete
+Progress: [##########] v1.0 complete | [##########] v2.0 complete | [░░░░░░░░░░] v3.0 0%
 
 ## Accumulated Context
 

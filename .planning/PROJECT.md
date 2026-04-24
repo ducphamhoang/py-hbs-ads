@@ -37,7 +37,16 @@ Provide one maintainable Python CLI and automation contract for ad-production op
 
 ### Active
 
-No active milestone requirements are currently defined. The next milestone should be created with `$gsd-new-milestone`.
+- [ ] People-state schema, store module, and bootstrap state file
+- [ ] Guarded operator CLI for leave/availability/backup writes (dry-run default)
+- [ ] Read-only staffing query surface
+- [ ] Derived staffing snapshot from registry + board cache + people state
+- [ ] Staffing risk detection (absent owners, overloaded, no-backup projects)
+- [ ] Preflight extended for people-state integrity
+- [ ] Daily board report extended with staffing-aware sections
+- [ ] Effective follow-up routing without Notion ownership mutation
+- [ ] Backward-compatible (board-only report still works without people-state)
+- [ ] Skill + docs updated to explain three-layer state model
 
 ### Out of Scope
 
@@ -80,19 +89,29 @@ Legacy SharePoint live-auth work was archived as a legacy backlog item and is no
 | Keep live Hermes runtime state local-only and commit only sanitized templates | Prevents Discord/Notion identifiers, emails, and operational audit history from leaking into source control | ✓ Good |
 | Archive legacy SharePoint live-auth work outside active roadmap routing | Keeps the Hermes PRD path complete without reviving unrelated legacy scope | ✓ Good |
 
-## Next Milestone Goals
+## Current Milestone: v3.0 Staffing-Aware Discord↔Notion Scrum
 
-To be defined by `$gsd-new-milestone`.
+**Goal:** Add a people-state layer so Hermes can track leave/availability, derive assignment risk, and produce staffing-aware follow-ups and reports without weakening guarded-write safety.
 
-Candidate areas to consider:
+**Target features:**
+- `people_state.json` schema + shared store module (load/save/validate/transitions)
+- Guarded operator CLI for leave/availability/backup writes (`update_people_state.py`)
+- Read-only staffing query surface (`query_people_state.py`)
+- Derived `staffing_snapshot.json` from registry + board cache + people state
+- Staffing risk module for absent owners, overloaded people, and no-backup projects
+- Preflight extended for people-state integrity checks
+- Daily board report extended with staffing-aware sections
+- Effective follow-up routing (active → owner, leave+backup → backup, leave+no-backup → escalate)
+- Skill + docs updated to explain three-layer state model
 
-- Production rehearsal and hardening for Hermes/Notion live operation.
-- A second backend implementation to prove the attributed-automation pattern generalizes.
-- Formal cutover or packaging work for operator adoption.
+**Architecture locked (from PRD):**
+- identity → `team_registry.json`; coordination → `pending_prompts.json`; staffing → `people_state.json` (new); derived → `staffing_snapshot.json` (new)
+- Routing changes follow-up target only — never auto-reassigns Notion ownership
+- Prompt-driven leave intake via Discord is out of scope for this milestone
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-04-22 after v2.0 milestone*
+*Last updated: 2026-04-24 after v3.0 milestone started*
