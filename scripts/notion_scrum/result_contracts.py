@@ -16,6 +16,8 @@ RESULT_KEYS = (
     "audit_events",
     "errors",
     "data",
+    "effective_followup_person_key",
+    "routing_reason",
 )
 
 
@@ -33,6 +35,8 @@ def build_result(
     audit_events: list[str] | None = None,
     errors: list[str] | None = None,
     data: dict[str, Any] | None = None,
+    effective_followup_person_key: str | None = None,
+    routing_reason: str = "unknown",
 ) -> dict[str, Any]:
     return {
         "ok": ok,
@@ -47,6 +51,8 @@ def build_result(
         "audit_events": list(audit_events or []),
         "errors": list(errors or []),
         "data": dict(data or {}),
+        "effective_followup_person_key": effective_followup_person_key,
+        "routing_reason": routing_reason,
     }
 
 
