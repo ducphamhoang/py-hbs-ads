@@ -106,7 +106,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. `docs/agent/hermes-discord-notion-scrum-staffing-state-schema.md` exists with the canonical JSON structure for availability, capacity, coordination, and source blocks, and explicitly states that assignments are derived from board cache.
   2. The `discord-notion-scrum-attribution` Hermes skill covers the three-layer state model, staffing-aware coordination goals, operator commands for leave/availability, routing rules for absent owners, and daily report expectations with staffing risk.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 16-01-PLAN.md — Update Hermes skill spec with v3.0 staffing-awareness (DOCS-02)
+- [ ] 16-02-PLAN.md — Close schema doc gaps: snapshot, operator commands, risk categories (DOCS-01)
 
 ## Progress
 

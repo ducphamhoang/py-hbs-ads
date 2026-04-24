@@ -319,3 +319,116 @@ Potential later candidates for core support:
 - participant-aware thread memories
 
 Until then, this skill should assume those concerns are handled by scripts and local state.
+
+---
+
+## 17. v3.0 Staffing-Awareness
+
+### 17.1 Three-Layer State Model
+
+v3.0 introduces a three-layer state model for managing identity, coordination, and staffing information:
+
+| Layer | File | Role | Mutability |
+|---|---|---|---|
+| **Identity** | `team_registry.json` | Canonical person keys, aliases, platform identities (Discord user IDs, display names), Notion mappings | Static — operator-edited |
+| **Coordination** | `pending_prompts.json` | Outbound messages awaiting reply | Transient — written/cleared by scripts |
+| **Staffing** | `people_state.json` | Leave status, availability, backup routing targets, bandwidth facts | Short-horizon operational — written by `update_people_state.py` |
+
+**Critical assignment boundary:** Assignments (task owners, project owners) are derived from `board_snapshot.json` + `team_registry.json`. They are **never** manually entered in `people_state.json`. The staffing layer records operational availability facts only — not ownership.
+
+A fourth runtime artifact — `cache/staffing_snapshot.json` — is produced by `build_staffing_snapshot.py` as a derived merge of `people_state.json`, `board_snapshot.json`, and `team_registry.json`. This is a cache artifact, not an operator-maintained file.
+
+### 17.2 Staffing-Aware Coordination Goals
+
+When `staffing_snapshot.json` is present and fresh, Hermes's coordination goals extend beyond the base protocol to include:
+
+- **Absent owner detection:** Identify tasks and projects whose owners are on leave or OOO, and surface the configured backup contact.
+- **Overload flagging:** Flag owners where `active_projects >= 3` OR `active_tasks >= 8` as overloaded. Mention overload context when routing follow-ups.
+- **Availability-aware routing:** Ensure follow-up messages reach the person who can actually act on them, not just the static Notion owner. Routing changes the follow-up target only — Notion task or project ownership is never auto-mutated.
+
+Staffing awareness is **conditional**: when `staffing_snapshot.json` is absent or stale, the skill falls back to board-only mode (see §17.5).
+
+### 17.3 Operator Commands for Leave and Availability
+
+> **Safety rule:** All writes require `--execute`. The default mode is **dry-run**. Always review dry-run output before passing `--execute`.
+
+**Write-path commands (`update_people_state.py`):**
+
+```
+# Record leave period with optional backup routing and note
+update_people_state.py --person <alias> --action set_leave --until YYYY-MM-DD [--backup <alias>] [--note "..."] [--execute]
+
+# Clear leave status (returns person to active)
+update_people_state.py --person <alias> --action clear_leave [--execute]
+
+# Set bandwidth level (reduced | limited | normal)
+update_people_state.py --person <alias> --action set_bandwidth --bandwidth reduced|limited|normal [--execute]
+
+# Set standing backup routing target
+update_people_state.py --person <alias> --action set_backup --backup <alias> [--execute]
+```
+
+**Read-path commands (`query_people_state.py` — no preflight required, always read-only):**
+
+```
+# Show staffing facts for a specific person
+query_people_state.py --person <alias>
+
+# List everyone currently on leave as of today
+query_people_state.py --on-leave-today
+
+# List everyone with reduced bandwidth
+query_people_state.py --reduced-bandwidth
+
+# Show who is configured as backup for a given person
+query_people_state.py --backup-for <alias>
+```
+
+All `<alias>` values must be canonical person keys validated against `team_registry.json`. Unrecognized aliases are rejected with a validation error.
+
+### 17.4 Routing Rules for Absent Owners
+
+When a follow-up needs to reach a task or project owner, apply this routing decision table:
+
+| `availability.status` | backup configured | Routing outcome |
+|---|---|---|
+| `active` | yes or no | Route to owner directly |
+| `leave` | yes | Route to backup |
+| `leave` | no | Surface escalation-needed signal |
+| `ooo` | yes | Route to backup |
+| `ooo` | no | Surface escalation-needed signal |
+| `unknown` | yes or no | Block and prompt operator |
+
+**Backup field disambiguation:**
+- `availability.backup_person_key` — leave-specific backup, set when a leave record is written.
+- `coordination.backup_person_key` — standing policy-level routing target, set independently.
+
+Both fields hold canonical person keys validated against `team_registry.json`. When a leave record is present and has its own backup, prefer `availability.backup_person_key`; fall back to `coordination.backup_person_key` if the leave-specific field is absent.
+
+No routing action modifies Notion task or project ownership. Routing affects follow-up message targets and daily report action lines only — changes are recommendations and prompts, not ownership mutations.
+
+### 17.5 Daily Report Expectations with Staffing Risk
+
+**When `staffing_snapshot.json` is present and fresh**, the daily board report includes the following staffing sections:
+
+- People currently on leave or with unusual availability (OOO, unknown status)
+- Tasks with absent owners (owner on leave or OOO)
+- Projects with absent owners and no backup configured (no-coverage risk)
+- Overloaded owners (active_projects >= 3 OR active_tasks >= 8)
+- Action lines for absent-owner items reference the backup person using their registry Discord mention token when a backup exists
+
+The five staffing risk categories detected by the risk module:
+
+1. Tasks assigned to absent owners
+2. Projects whose owners are on leave
+3. Absent owners with no backup configured
+4. Overloaded owners (active_projects >= 3 OR active_tasks >= 8)
+5. Reduced-bandwidth owners carrying overdue items
+
+**When `staffing_snapshot.json` is absent or stale**, the report falls back to **board-only mode**:
+
+- A warning note is included in the report indicating that staffing data is unavailable or outdated
+- All staffing sections are skipped
+- Routing decisions proceed as if all owners are available
+
+Board-only mode is a valid operational state — not an error. Hermes should not refuse to run a daily report just because staffing data is missing. The board-only report is still a complete and useful output.
