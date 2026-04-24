@@ -16,6 +16,8 @@ The skill should let Hermes:
 - apply safe Notion updates only when confidence is high
 - ask for clarification instead of writing when confidence is low
 
+In v3.0, Hermes is also **staffing-aware**: it detects absent owners, surfaces backup contacts, and applies routing rules so follow-ups reach the person who can actually act on them. Staffing awareness is conditional — it activates when `staffing_snapshot.json` is present; the skill falls back to board-only mode when it is absent.
+
 The skill must assume:
 - Hermes core is unchanged
 - state is stored externally in local JSON files
@@ -63,6 +65,7 @@ The skill should assume these artifacts exist or can be created:
 - `~/work/py-hbs-ads/state/notion_scrum/team_registry.json`
 - `~/work/py-hbs-ads/state/notion_scrum/pending_prompts.json`
 - `~/work/py-hbs-ads/state/notion_scrum/audit_log.jsonl`
+- `~/work/py-hbs-ads/state/notion_scrum/people_state.json` — Staffing facts: leave, availability, backup routing, bandwidth (maintained by operator CLI)
 
 ### Scripts
 - `~/work/py-hbs-ads/scripts/notion_scrum/resolve_person.py`
@@ -71,6 +74,10 @@ The skill should assume these artifacts exist or can be created:
 - `~/work/py-hbs-ads/scripts/notion_scrum/plan_notion_update.py`
 - `~/work/py-hbs-ads/scripts/notion_scrum/apply_notion_update.py`
 - `~/work/py-hbs-ads/scripts/notion_scrum/scrum_state_doctor.py`
+- `~/work/py-hbs-ads/scripts/notion_scrum/update_people_state.py` — Guarded write CLI for staffing state (dry-run default, requires `--execute` for writes)
+- `~/work/py-hbs-ads/scripts/notion_scrum/query_people_state.py` — Read-only query CLI for staffing state
+
+> **Note:** `cache/staffing_snapshot.json` (derived from `people_state.json` + `board_snapshot.json` + `team_registry.json` by `build_staffing_snapshot.py`) is a runtime artifact — not operator-maintained.
 
 ---
 
