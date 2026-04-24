@@ -61,7 +61,12 @@ Plans:
   3. Snapshot includes a `project_effective_owners` map that reflects leave/backup substitution for each project.
   4. Preflight warns (not errors) when `people_state.json` is absent for read-only workflows, and errors when an existing file has an invalid schema or unsupported version for staffing-aware write operations.
   5. Preflight validates that all backup person keys exist in `team_registry.json` and that all leave date windows are logically valid.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [x] 13-01-PLAN.md — Failing test suite (RED phase): snapshot contract (SNAP-01..04) and preflight staffing extension (PRE-01..04)
+- [x] 13-02-PLAN.md — build_staffing_snapshot.py implementation: local derivation module + thin CLI
+- [x] 13-03-PLAN.md — preflight.py additive staffing integrity extension
 
 ### Phase 14: Staffing Risk Module and Follow-Up Routing
 **Goal**: The system can detect all five staffing risk categories and compute the correct effective follow-up target for any owner availability state without modifying Notion ownership.
@@ -73,7 +78,11 @@ Plans:
   3. Routing returns the configured backup person when the owner is `leave` or `ooo` and a backup exists.
   4. Routing surfaces an escalation-needed signal when the owner is absent and no backup is configured.
   5. No routing action modifies Notion task or project ownership — changes are recommendations only.
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — TDD RED phase: staffing_risk.py stub + failing test suite (all RISK/ROUT requirements)
+- [ ] 14-02-PLAN.md — TDD GREEN phase: full detect_risks() and compute_routing_recommendation() implementation
 
 ### Phase 15: Daily Board Report Staffing Sections and Backward-Compat Guard
 **Goal**: The daily board report surfaces staffing-aware risk sections and backup-aware action lines when a staffing snapshot is present, and falls back cleanly to board-only output when it is absent.
@@ -101,7 +110,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 11. People-State Schema, Store, and Contracts | 3/3 | Complete    | 2026-04-24 |
 | 12. Operator CLI Write and Query Surface | 0/TBD | Not started | - |
-| 13. Staffing Snapshot Derivation and Preflight Extensions | 0/TBD | Not started | - |
+| 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
 | 14. Staffing Risk Module and Follow-Up Routing | 0/TBD | Not started | - |
 | 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 0/TBD | Not started | - |
 | 16. Skill and Documentation Updates | 0/TBD | Not started | - |
