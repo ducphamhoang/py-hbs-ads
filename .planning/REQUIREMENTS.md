@@ -32,18 +32,18 @@
 
 ### SNAP — Derived staffing snapshot
 
-- [ ] **SNAP-01**: System generates `cache/staffing_snapshot.json` from `team_registry.json` + `people_state.json` + `cache/board_snapshot.json` via `build_staffing_snapshot.py`.
-- [ ] **SNAP-02**: Snapshot includes per-person: display name, availability status, leave window, backup key, active project IDs/titles, active task IDs/titles, counts (active projects, tasks, blocked, overdue, undated), and risk flags.
-- [ ] **SNAP-03**: Snapshot derives assignments from board cache owner IDs and registry notion mappings — not from manually entered data in `people_state.json`.
-- [ ] **SNAP-04**: Snapshot includes `project_effective_owners` map with effective owner keys considering leave/backup.
+- [x] **SNAP-01**: System generates `cache/staffing_snapshot.json` from `team_registry.json` + `people_state.json` + `cache/board_snapshot.json` via `build_staffing_snapshot.py`.
+- [x] **SNAP-02**: Snapshot includes per-person: display name, availability status, leave window, backup key, active project IDs/titles, active task IDs/titles, counts (active projects, tasks, blocked, overdue, undated), and risk flags.
+- [x] **SNAP-03**: Snapshot derives assignments from board cache owner IDs and registry notion mappings — not from manually entered data in `people_state.json`.
+- [x] **SNAP-04**: Snapshot includes `project_effective_owners` map with effective owner keys considering leave/backup.
 
 ### RISK — Staffing risk detection and reporting
 
-- [ ] **RISK-01**: System identifies tasks assigned to absent owners.
-- [ ] **RISK-02**: System identifies projects whose owners are on leave.
-- [ ] **RISK-03**: System identifies absent owners with no backup configured.
-- [ ] **RISK-04**: System identifies overloaded owners (default threshold: `active_projects >= 3` OR `active_tasks >= 8`).
-- [ ] **RISK-05**: System identifies reduced-bandwidth owners carrying overdue items.
+- [x] **RISK-01**: System identifies tasks assigned to absent owners.
+- [x] **RISK-02**: System identifies projects whose owners are on leave.
+- [x] **RISK-03**: System identifies absent owners with no backup configured.
+- [x] **RISK-04**: System identifies overloaded owners (default threshold: `active_projects >= 3` OR `active_tasks >= 8`).
+- [x] **RISK-05**: System identifies reduced-bandwidth owners carrying overdue items.
 
 ### RPT — Daily board report with staffing-aware sections
 
@@ -53,17 +53,17 @@
 
 ### PRE — Preflight people-state integrity checks
 
-- [ ] **PRE-01**: Preflight warns (not errors) when `people_state.json` is missing for read-only workflows.
-- [ ] **PRE-02**: Preflight errors when `people_state.json` is present but invalid (bad schema, unsupported version) for staffing-aware write operations.
-- [ ] **PRE-03**: Preflight validates that all backup person keys in `people_state.json` exist in `team_registry.json`.
-- [ ] **PRE-04**: Preflight validates that leave date windows are logically valid (`since <= until`, dates parseable).
+- [x] **PRE-01**: Preflight warns (not errors) when `people_state.json` is missing for read-only workflows.
+- [x] **PRE-02**: Preflight errors when `people_state.json` is present but invalid (bad schema, unsupported version) for staffing-aware write operations.
+- [x] **PRE-03**: Preflight validates that all backup person keys in `people_state.json` exist in `team_registry.json`.
+- [x] **PRE-04**: Preflight validates that leave date windows are logically valid (`since <= until`, dates parseable).
 
 ### ROUT — Staffing-aware follow-up routing
 
-- [ ] **ROUT-01**: System routes follow-up to the direct owner when owner availability is `active`.
-- [ ] **ROUT-02**: System routes follow-up to backup person when owner is `leave`/`ooo` and backup is configured.
-- [ ] **ROUT-03**: System surfaces escalation-needed signal when owner is absent and no backup is configured.
-- [ ] **ROUT-04**: Routing logic never modifies Notion task ownership — changes are recommendation/prompt only.
+- [x] **ROUT-01**: System routes follow-up to the direct owner when owner availability is `active`.
+- [x] **ROUT-02**: System routes follow-up to backup person when owner is `leave`/`ooo` and backup is configured.
+- [x] **ROUT-03**: System surfaces escalation-needed signal when owner is absent and no backup is configured.
+- [x] **ROUT-04**: Routing logic never modifies Notion task ownership — changes are recommendation/prompt only.
 
 ### COMPAT — Backward compatibility
 
@@ -121,23 +121,23 @@
 | SCLI-03 | Phase 12 | Pending |
 | SCLI-04 | Phase 12 | Pending |
 | SCLI-05 | Phase 12 | Pending |
-| SNAP-01 | Phase 13 | Pending |
-| SNAP-02 | Phase 13 | Pending |
-| SNAP-03 | Phase 13 | Pending |
-| SNAP-04 | Phase 13 | Pending |
-| PRE-01 | Phase 13 | Pending |
-| PRE-02 | Phase 13 | Pending |
-| PRE-03 | Phase 13 | Pending |
-| PRE-04 | Phase 13 | Pending |
-| RISK-01 | Phase 14 | Pending |
-| RISK-02 | Phase 14 | Pending |
-| RISK-03 | Phase 14 | Pending |
-| RISK-04 | Phase 14 | Pending |
-| RISK-05 | Phase 14 | Pending |
-| ROUT-01 | Phase 14 | Pending |
-| ROUT-02 | Phase 14 | Pending |
-| ROUT-03 | Phase 14 | Pending |
-| ROUT-04 | Phase 14 | Pending |
+| SNAP-01 | Phase 13 | Complete |
+| SNAP-02 | Phase 13 | Complete |
+| SNAP-03 | Phase 13 | Complete |
+| SNAP-04 | Phase 13 | Complete |
+| PRE-01 | Phase 13 | Complete |
+| PRE-02 | Phase 13 | Complete |
+| PRE-03 | Phase 13 | Complete |
+| PRE-04 | Phase 13 | Complete |
+| RISK-01 | Phase 14 | Complete |
+| RISK-02 | Phase 14 | Complete |
+| RISK-03 | Phase 14 | Complete |
+| RISK-04 | Phase 14 | Complete |
+| RISK-05 | Phase 14 | Complete |
+| ROUT-01 | Phase 14 | Complete |
+| ROUT-02 | Phase 14 | Complete |
+| ROUT-03 | Phase 14 | Complete |
+| ROUT-04 | Phase 14 | Complete |
 | RPT-01 | Phase 15 | Pending |
 | RPT-02 | Phase 15 | Pending |
 | RPT-03 | Phase 15 | Pending |

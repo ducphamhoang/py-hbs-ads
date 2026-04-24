@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
-status: ready_to_plan
-stopped_at: v3.0 roadmap written; Phase 11 ready to plan
-last_updated: "2026-04-24T07:28:00.146Z"
-last_activity: 2026-04-24 -- Phase --phase execution started
+status: planning
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-04-24T16:32:26.033Z"
+last_activity: 2026-04-24
 progress:
   total_phases: 6
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 0
-  percent: 17
+  completed_phases: 3
+  total_plans: 11
+  completed_plans: 10
+  percent: 33
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-24)
 
 **Core value:** Provide one maintainable Python CLI and automation contract for ad-production operations without regressing operational clarity, safety, attribution, or migration practicality.  
-**Current focus:** Phase --phase — 11
+**Current focus:** Phase 14 — staffing-risk-module-and-follow-up-routing
 
 ## Current Position
 
-Phase: 12
+Phase: 14
 Plan: Not started
 Status: Ready to plan
 Last activity: 2026-04-24
 
-Progress: [##########] v1.0 complete | [##########] v2.0 complete | [░░░░░░░░░░] v3.0 0%
+Progress: [##########] v1.0 complete | [##########] v2.0 complete | [###░░░░░░░] v3.0 33%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 3 (v3.0)
+- Total plans completed: 6 (v3.0)
 - Average duration: —
 - Total execution time: —
 
@@ -45,6 +45,7 @@ Progress: [##########] v1.0 complete | [##########] v2.0 complete | [░░░�
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 11 | 3 | - | - |
+| 13 | 3 | - | - |
 
 *Updated after each plan completion*
 
@@ -61,10 +62,10 @@ Current decisions affecting v3.0:
 - Routing changes follow-up target only; Notion ownership is never auto-mutated.
 - Prompt-driven leave intake via Discord is explicitly out of scope for v3.0.
 - Staffing snapshot (`staffing_snapshot.json`) is a standalone derived artifact, not embedded in `daily_board_report.py`.
+- [Phase 14]: TDD RED: tests assert on expected dict structure (not pytest.raises) so all 10 show as FAILED in RED phase
 
 ### Pending Todos
 
-- Run `/gsd-plan-phase 11` to begin Phase 11 planning.
 - Before production cutover, run a live environment rehearsal for external integrations that require real credentials or live services.
 
 ### Blockers/Concerns
@@ -80,8 +81,6 @@ Current decisions affecting v3.0:
 
 ## Session Continuity
 
-Last session: 2026-04-24
-Stopped at: v3.0 roadmap written; Phase 11 ready to plan
+Last session: 2026-04-24T16:32:20.883Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None
-
-**Planned Phase:** 11 (People-State Schema, Store, and Contracts) — 3 plans — 2026-04-24T07:19:39.454Z

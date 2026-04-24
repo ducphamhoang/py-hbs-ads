@@ -111,7 +111,7 @@ Plans:
 | 11. People-State Schema, Store, and Contracts | 3/3 | Complete    | 2026-04-24 |
 | 12. Operator CLI Write and Query Surface | 0/TBD | Not started | - |
 | 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
-| 14. Staffing Risk Module and Follow-Up Routing | 0/TBD | Not started | - |
+| 14. Staffing Risk Module and Follow-Up Routing | 1/2 | In Progress|  |
 | 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 0/TBD | Not started | - |
 | 16. Skill and Documentation Updates | 0/TBD | Not started | - |
 
