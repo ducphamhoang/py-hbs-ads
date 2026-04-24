@@ -116,7 +116,7 @@ Plans:
 | 12. Operator CLI Write and Query Surface | 0/TBD | Not started | - |
 | 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
 | 14. Staffing Risk Module and Follow-Up Routing | 2/2 | Complete    | 2026-04-24 |
-| 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 0/TBD | Not started | - |
+| 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 1/2 | In Progress|  |
 | 16. Skill and Documentation Updates | 0/TBD | Not started | - |
 
 ## Completed Phase History

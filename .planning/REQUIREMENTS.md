@@ -47,9 +47,9 @@
 
 ### RPT — Daily board report with staffing-aware sections
 
-- [ ] **RPT-01**: Daily board report loads `staffing_snapshot.json` when present and fresh; falls back to board-only mode with a warning when missing.
-- [ ] **RPT-02**: Report includes staffing sections: people on leave/unusual availability, tasks with absent owners, projects with absent owners and no backup, overloaded owners.
-- [ ] **RPT-03**: Report action lines mention backup person (via registry Discord mention token) when owner is absent and backup exists.
+- [x] **RPT-01**: Daily board report loads `staffing_snapshot.json` when present and fresh; falls back to board-only mode with a warning when missing.
+- [x] **RPT-02**: Report includes staffing sections: people on leave/unusual availability, tasks with absent owners, projects with absent owners and no backup, overloaded owners.
+- [x] **RPT-03**: Report action lines mention backup person (via registry Discord mention token) when owner is absent and backup exists.
 
 ### PRE — Preflight people-state integrity checks
 
@@ -67,7 +67,7 @@
 
 ### COMPAT — Backward compatibility
 
-- [ ] **COMPAT-01**: Existing board-only daily report continues to work when `people_state.json` is absent — staffing sections are skipped, no crash.
+- [x] **COMPAT-01**: Existing board-only daily report continues to work when `people_state.json` is absent — staffing sections are skipped, no crash.
 - [x] **COMPAT-02**: Missing `people_state.json` is treated as `unknown` availability throughout all read paths.
 
 ### DOCS — Skill and documentation updates
@@ -138,10 +138,10 @@
 | ROUT-02 | Phase 14 | Complete |
 | ROUT-03 | Phase 14 | Complete |
 | ROUT-04 | Phase 14 | Complete |
-| RPT-01 | Phase 15 | Pending |
-| RPT-02 | Phase 15 | Pending |
-| RPT-03 | Phase 15 | Pending |
-| COMPAT-01 | Phase 15 | Pending |
+| RPT-01 | Phase 15 | Complete |
+| RPT-02 | Phase 15 | Complete |
+| RPT-03 | Phase 15 | Complete |
+| COMPAT-01 | Phase 15 | Complete |
 | DOCS-01 | Phase 16 | Pending |
 | DOCS-02 | Phase 16 | Pending |
 
