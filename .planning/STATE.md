@@ -4,8 +4,8 @@ milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
 status: planning
 stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-04-28T10:11:32.529Z"
-last_activity: 2026-04-28 - Completed quick task 260428-nvm: Add create_project and create_task templates to template_catalog.py
+last_updated: "2026-04-28T10:35:52.511Z"
+last_activity: 2026-04-28 - Completed quick task 260428-ofw: Enhance create_project and create_task templates with owner, dates, and brief fields
 progress:
   total_phases: 6
   completed_phases: 6
@@ -83,6 +83,7 @@ Current decisions affecting v3.0:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260428-nvm | Add create_project and create_task templates to template_catalog.py | 2026-04-28 | 21971fe | [260428-nvm-add-create-project-and-create-task-templ](./quick/260428-nvm-add-create-project-and-create-task-templ/) |
+| 260428-ofw | Enhance create_project and create_task templates with owner, dates, and brief fields | 2026-04-28 | 7ac84cd, ad65a44 | [260428-ofw-enhance-create-project-and-create-task-t](./quick/260428-ofw-enhance-create-project-and-create-task-t/) |
 
 ### Roadmap Evolution
 
