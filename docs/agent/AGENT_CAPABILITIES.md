@@ -343,10 +343,78 @@ python ~/work/py-hbs-ads/scripts/notion_scrum/template_catalog.py \
 ```
 
 Available templates:
-- Queries: `query_projects_not_done`, `query_tasks_not_done`, `query_tasks_missing_owner`, `query_tasks_missing_due_date`
-- Updates: `update_page_status`, `update_page_rich_text`, `update_page_date`
-- Identity: `lookup_notion_person_by_discord`, `inbound_discord_reply_event`
-- Prompts: `prompt_task_due_date_request`, `prompt_task_status_request`
+- **Create:** `create_project`, `create_task`
+  - `create_project`: Creates project pages in Projects database with optional owner, end date, and brief. Variables: `project_name` (required), `owner_email` (optional), `end_date` (optional, YYYY-MM-DD), `brief` (optional, rich-text content). Auto-loads `projects_data_source_id` from board_config.
+  - `create_task`: Creates task pages in Tasks database, auto-linked to parent project, with optional assignee and due date. Variables: `task_name` (required), `project_id` (required), `assignee_email` (optional), `due_date` (optional, YYYY-MM-DD), `brief` (optional, rich-text content). Auto-loads `tasks_data_source_id` from board_config.
+- **Queries:** `query_projects_not_done`, `query_tasks_not_done`, `query_tasks_missing_owner`, `query_tasks_missing_due_date`
+- **Updates:** `update_page_status`, `update_page_rich_text`, `update_page_date`
+- **Identity:** `lookup_notion_person_by_discord`, `inbound_discord_reply_event`
+- **Prompts:** `prompt_task_due_date_request`, `prompt_task_status_request`
+
+**Usage examples:**
+```bash
+# List all templates
+python scripts/notion_scrum/template_catalog.py --list
+
+# Create a project
+python scripts/notion_scrum/template_catalog.py \
+  --template create_project \
+  --var project_name="Game teaser 03" \
+  --var brief="30-sec video concept"
+
+# Create a project with owner and end date
+python scripts/notion_scrum/template_catalog.py \
+  --template create_project \
+  --var project_name="Q2 Campaign" \
+  --var owner_email="duc@example.com" \
+  --var end_date="2026-06-30" \
+  --var brief="Creative campaign assets"
+
+# Create a task linked to that project
+python scripts/notion_scrum/template_catalog.py \
+  --template create_task \
+  --var task_name="rough cut v1" \
+  --var project_id=<project-uuid>
+
+# Create a task with assignee and due date
+python scripts/notion_scrum/template_catalog.py \
+  --template create_task \
+  --var task_name="Design mockups" \
+  --var project_id=<project-uuid> \
+  --var assignee_email="ma@example.com" \
+  --var due_date="2026-05-15" \
+  --var brief="High-fidelity mockups for review"
+```
+
+### Field Reference for create_project and create_task
+
+#### Project Creation Fields
+
+| Field | Type | Required | Format | Purpose |
+|-------|------|----------|--------|---------|
+| `project_name` | text | Yes | Plain text | Title of the project |
+| `owner_email` | person | No | Notion email address (e.g., `duc@example.com`) | Person responsible for the project; resolved to Notion user ID at runtime |
+| `end_date` | date | No | ISO 8601: `YYYY-MM-DD` | Target completion date for the project |
+| `brief` | rich-text | No | Plain text or markdown | Project description/context, stored as page block content |
+| `status` | status | No (default: "In progress") | Text matching Notion status option | Current project status |
+
+#### Task Creation Fields
+
+| Field | Type | Required | Format | Purpose |
+|-------|------|----------|--------|---------|
+| `task_name` | text | Yes | Plain text | Title of the task |
+| `project_id` | relation | Yes | Notion page UUID | Parent project this task belongs to |
+| `assignee_email` | person | No | Notion email address (e.g., `ma@example.com`) | Person responsible for the task; resolved to Notion user ID at runtime |
+| `due_date` | date | No | ISO 8601: `YYYY-MM-DD` | Target completion date for the task |
+| `brief` | rich-text | No | Plain text or markdown | Task description/context, stored as page block content |
+| `status` | status | No (default: "To do") | Text matching Notion status option | Current task status |
+
+#### Notes on Optional Fields
+
+- **Email fields** (`owner_email`, `assignee_email`): Provide the person's Notion workspace email. The system resolves this to their Notion user ID when creating the page.
+- **Date fields** (`end_date`, `due_date`): Must be valid ISO 8601 date format (`YYYY-MM-DD`). Invalid dates will cause the API call to fail.
+- **Brief content**: Stored as a rich-text paragraph block under the page. If not provided, no content block is added.
+- **Optional fields with empty values**: Simply omit them from the `--var` arguments; they default to empty and are skipped.
 
 ---
 
