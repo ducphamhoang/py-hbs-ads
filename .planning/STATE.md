@@ -4,7 +4,7 @@ milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
 status: planning
 stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-04-24T18:01:09.370Z"
+last_updated: "2026-04-25T01:16:30.289Z"
 last_activity: 2026-04-24
 progress:
   total_phases: 6

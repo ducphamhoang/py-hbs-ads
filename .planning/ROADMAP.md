@@ -121,7 +121,7 @@ Plans:
 | 13. Staffing Snapshot Derivation and Preflight Extensions | 3/3 | Complete    | 2026-04-24 |
 | 14. Staffing Risk Module and Follow-Up Routing | 2/2 | Complete    | 2026-04-24 |
 | 15. Daily Board Report Staffing Sections and Backward-Compat Guard | 2/2 | Complete    | 2026-04-24 |
-| 16. Skill and Documentation Updates | 2/2 | Complete   | 2026-04-24 |
+| 16. Skill and Documentation Updates | 2/2 | Complete    | 2026-04-25 |
 
 ## Completed Phase History
 
