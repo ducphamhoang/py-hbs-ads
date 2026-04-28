@@ -4,8 +4,8 @@ milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
 status: planning
 stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-04-25T01:16:30.289Z"
-last_activity: 2026-04-24
+last_updated: "2026-04-28T10:11:32.529Z"
+last_activity: 2026-04-28 - Completed quick task 260428-nvm: Add create_project and create_task templates to template_catalog.py
 progress:
   total_phases: 6
   completed_phases: 6
@@ -77,6 +77,12 @@ Current decisions affecting v3.0:
 
 - No active blockers.
 - Legacy SharePoint live-auth work remains archived as legacy scope.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260428-nvm | Add create_project and create_task templates to template_catalog.py | 2026-04-28 | 21971fe | [260428-nvm-add-create-project-and-create-task-templ](./quick/260428-nvm-add-create-project-and-create-task-templ/) |
 
 ### Roadmap Evolution
 
