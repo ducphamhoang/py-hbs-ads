@@ -293,12 +293,16 @@ TEMPLATES: dict[str, dict[str, Any]] = {
     },
     "create_project": {
         "kind": "notion_page_create",
-        "description": "Create a new project page in the Projects database",
+        "description": "Create a new project page in the Projects database with optional owner, end date, and brief content",
         "defaults": {
             "data_source_id": PROJECTS_DATA_SOURCE_ID,
             "status": "In progress",
+            "owner_email": "",
+            "end_date": "",
+            "brief": "",
         },
         "required_variables": ["project_name"],
+        "optional_variables": ["owner_email", "end_date", "brief"],
         "request": {
             "parent": {
                 "database_id": "{{data_source_id}}",
@@ -317,15 +321,33 @@ TEMPLATES: dict[str, dict[str, Any]] = {
                 },
             },
         },
+        "children": [
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {"content": "{{brief}}"},
+                        }
+                    ]
+                },
+            }
+        ],
     },
     "create_task": {
         "kind": "notion_page_create",
-        "description": "Create a new task page in the Tasks database linked to a project",
+        "description": "Create a new task page in the Tasks database, auto-linked to parent project, with optional assignee and due date",
         "defaults": {
             "data_source_id": TASKS_DATA_SOURCE_ID,
             "status": "To do",
+            "assignee_email": "",
+            "due_date": "",
+            "brief": "",
         },
         "required_variables": ["task_name", "project_id"],
+        "optional_variables": ["assignee_email", "due_date", "brief"],
         "request": {
             "parent": {
                 "database_id": "{{data_source_id}}",
@@ -347,6 +369,20 @@ TEMPLATES: dict[str, dict[str, Any]] = {
                 },
             },
         },
+        "children": [
+            {
+                "object": "block",
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {
+                            "type": "text",
+                            "text": {"content": "{{brief}}"},
+                        }
+                    ]
+                },
+            }
+        ],
     },
 }
 
@@ -426,7 +462,7 @@ def _apply_runtime_board_defaults(name: str, variables: dict[str, Any]) -> None:
 
 
 def _renderable_sections(spec: dict[str, Any]) -> list[str]:
-    return [section for section in ("request", "prompt", "event") if section in spec]
+    return [section for section in ("request", "prompt", "event", "children") if section in spec]
 
 
 def render_template(name: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -441,7 +477,10 @@ def render_template(name: str, variables: dict[str, Any] | None = None) -> dict[
     needed: set[str] = set()
     for section in _renderable_sections(spec):
         needed.update(_collect_placeholders(spec[section]))
-    missing = sorted(key for key in needed if key not in merged_variables)
+
+    required_vars = set(spec.get("required_variables") or [])
+    optional_vars = set(spec.get("optional_variables") or [])
+    missing = sorted(key for key in needed if key not in merged_variables and key in required_vars)
     if missing:
         raise KeyError(
             f"Template {name!r} missing required variables: {', '.join(missing)}"
@@ -450,6 +489,13 @@ def render_template(name: str, variables: dict[str, Any] | None = None) -> dict[
     rendered = copy.deepcopy(spec)
     for section in _renderable_sections(spec):
         rendered[section] = _replace_placeholders(rendered[section], merged_variables)
+
+    # Remove children block if brief is empty
+    if "children" in rendered:
+        brief_value = merged_variables.get("brief", "")
+        if not brief_value or brief_value == "":
+            del rendered["children"]
+
     rendered["name"] = name
     rendered["profile"] = {
         key: merged_variables[key]
