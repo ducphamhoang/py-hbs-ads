@@ -420,9 +420,14 @@ def format_daily_check_message(
             lines.append("")
             lines.append("**Nhân sự bandwidth thấp với task overdue**")
             for item in risks["reduced_bandwidth_with_overdue"]:
-                pct = int(item.get("bandwidth", 0) * 100)
+                bandwidth = item.get("bandwidth", 0)
+                # Handle both numeric and string bandwidth values
+                if isinstance(bandwidth, str):
+                    pct_display = bandwidth  # e.g., "50%"
+                else:
+                    pct_display = f"{int(bandwidth * 100)}%"
                 lines.append(
-                    f"- {item['display_name']} (bandwidth {pct}%): {item['overdue_tasks']} task overdue"
+                    f"- {item['display_name']} (bandwidth {pct_display}): {item['overdue_tasks']} task overdue"
                 )
 
     return "\n".join(lines)
