@@ -55,5 +55,8 @@ archive/
 .planning/
 .qwen/
 
+# Local config overrides
+config/notion_scrum/board_config.json
+
 # Graphify (generated knowledge graph)
 graphify-out/

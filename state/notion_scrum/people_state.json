@@ -1,5 +1,39 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-04-24T00:00:00Z",
-  "people": {}
+  "updated_at": "2026-04-28T10:16:00Z",
+  "people": {
+    "ducplc": {
+      "canonical_person_key": "ducplc",
+      "display_name": "duc phan",
+      "availability": {
+        "status": "ooo",
+        "since": "2026-04-28",
+        "until": "2026-05-04",
+        "timezone": "ICT",
+        "half_day": null,
+        "note": "DucPLC sẽ off đến hết tuần này, đến 2026-05-04",
+        "backup_person_key": null,
+        "source": {
+          "channel": "discord",
+          "sender": "ducph",
+          "message": "DucPLC sẽ off đến hết tuần này, đến 2026-05-04"
+        },
+        "updated_at": "2026-04-28T10:16:00Z"
+      },
+      "capacity": {
+        "bandwidth": "normal",
+        "note": null,
+        "updated_at": "2026-04-28T10:16:00Z"
+      },
+      "coordination": {
+        "default_followup_policy": "",
+        "backup_person_key": null,
+        "last_status_check_at": ""
+      },
+      "metadata": {
+        "tags": ["ooo"],
+        "last_actor_person_key": "ducph"
+      }
+    }
+  }
 }

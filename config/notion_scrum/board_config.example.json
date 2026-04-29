@@ -1,0 +1,7 @@
+{
+  "_comment": "Copy this file to board_config.json. These values are the current HBS local defaults, not universal placeholders, so replace them if your workspace uses different Notion data source IDs or Discord channel defaults.",
+  "projects_data_source_id": "2e945d07-72af-8117-a240-000bf508da50",
+  "tasks_data_source_id": "2e945d07-72af-81dd-821a-000b082e6e95",
+  "default_discord_chat_id": "discord-channel-hbs-creative",
+  "default_discord_channel_name": "#hbs-creative-sml"
+}

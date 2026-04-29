@@ -35,14 +35,17 @@ Provide one maintainable Python CLI and automation contract for ad-production op
 - ✓ Notion adapter boundary for attributed automation — v2.0
 - ✓ Reusable shared-thread attributed automation documentation and tests — v2.0
 
+### Validated
+
+- ✓ People-state schema, store module, and bootstrap state file — Phase 11
+- ✓ Derived staffing snapshot from registry + board cache + people state — Phase 13
+- ✓ Preflight extended for people-state integrity — Phase 13
+
 ### Active
 
-- [ ] People-state schema, store module, and bootstrap state file
 - [ ] Guarded operator CLI for leave/availability/backup writes (dry-run default)
 - [ ] Read-only staffing query surface
-- [ ] Derived staffing snapshot from registry + board cache + people state
 - [ ] Staffing risk detection (absent owners, overloaded, no-backup projects)
-- [ ] Preflight extended for people-state integrity
 - [ ] Daily board report extended with staffing-aware sections
 - [ ] Effective follow-up routing without Notion ownership mutation
 - [ ] Backward-compatible (board-only report still works without people-state)
@@ -114,4 +117,4 @@ Legacy SharePoint live-auth work was archived as a legacy backlog item and is no
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-04-24 after v3.0 milestone started*
+*Last updated: 2026-04-24 after Phase 13*

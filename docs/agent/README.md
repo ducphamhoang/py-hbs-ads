@@ -17,6 +17,7 @@ These guides are implementation-facing instructions for AI agents or subagents t
 - `worker-invocation-patterns.md`
 - `notion-media-scrum-policy.md`
 - `notion-media-scrum-routine.md`
+- `notion-scrum-template-catalog.md`
 - `reusable-library-trim-workflow.md`
 - `creative-market-research/README.md`
 - `prompts/sharepoint-worker-template.md`

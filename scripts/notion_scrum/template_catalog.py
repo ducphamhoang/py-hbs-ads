@@ -5,9 +5,11 @@ import argparse
 import copy
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 from board_config import DEFAULT_BOARD_CONFIG, load as load_board_config
+from common import DEFAULT_TEAM_REGISTRY, find_person_by_email, load_registry
 
 PROJECTS_DATA_SOURCE_ID = DEFAULT_BOARD_CONFIG["projects_data_source_id"]
 TASKS_DATA_SOURCE_ID = DEFAULT_BOARD_CONFIG["tasks_data_source_id"]
@@ -446,6 +448,33 @@ def list_templates() -> list[dict[str, Any]]:
     return items
 
 
+def _resolve_person_fields(name: str, variables: dict[str, Any]) -> None:
+    """Resolve email addresses to Notion user IDs for person fields."""
+    if name not in {"create_project", "create_task"}:
+        return
+
+    try:
+        registry = load_registry(DEFAULT_TEAM_REGISTRY)
+    except (FileNotFoundError, ValueError):
+        return
+
+    if name == "create_project" and "owner_email" in variables and variables["owner_email"]:
+        person = find_person_by_email(registry, variables["owner_email"])
+        if person:
+            user_id = (person.get("notion") or {}).get("user_id")
+            if user_id:
+                variables["owner_user_id"] = user_id
+                variables["owner_email"] = ""
+
+    if name == "create_task" and "assignee_email" in variables and variables["assignee_email"]:
+        person = find_person_by_email(registry, variables["assignee_email"])
+        if person:
+            user_id = (person.get("notion") or {}).get("user_id")
+            if user_id:
+                variables["assignee_user_id"] = user_id
+                variables["assignee_email"] = ""
+
+
 def _apply_runtime_board_defaults(name: str, variables: dict[str, Any]) -> None:
     board_config = load_board_config()
     if name == "query_projects_not_done":
@@ -473,6 +502,7 @@ def render_template(name: str, variables: dict[str, Any] | None = None) -> dict[
     _apply_runtime_board_defaults(name, merged_variables)
     if variables:
         merged_variables.update(variables)
+    _resolve_person_fields(name, merged_variables)
 
     needed: set[str] = set()
     for section in _renderable_sections(spec):
@@ -489,6 +519,19 @@ def render_template(name: str, variables: dict[str, Any] | None = None) -> dict[
     rendered = copy.deepcopy(spec)
     for section in _renderable_sections(spec):
         rendered[section] = _replace_placeholders(rendered[section], merged_variables)
+
+    # Add owner/assignee fields if user IDs were resolved
+    if name == "create_project" and "request" in rendered and "properties" in rendered["request"]:
+        if merged_variables.get("owner_user_id"):
+            rendered["request"]["properties"]["Owner"] = {
+                "people": [{"object": "user", "id": merged_variables["owner_user_id"]}]
+            }
+
+    if name == "create_task" and "request" in rendered and "properties" in rendered["request"]:
+        if merged_variables.get("assignee_user_id"):
+            rendered["request"]["properties"]["Assignee"] = {
+                "people": [{"object": "user", "id": merged_variables["assignee_user_id"]}]
+            }
 
     # Remove children block if brief is empty
     if "children" in rendered:

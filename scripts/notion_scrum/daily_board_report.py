@@ -9,7 +9,7 @@ from typing import Any
 
 import staffing_risk
 from board_cache import _compact_task
-from common import load_api_key, notion_request
+from common import load_api_key, notion_request, utc_now_iso
 from query_common_view import prepare_view
 
 ICT = timezone(timedelta(hours=7))
@@ -498,7 +498,10 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
 
     # Optional staffing snapshot
     staffing_snapshot_path = root / "state" / "notion_scrum" / "cache" / "staffing_snapshot.json"
+    people_state_path = root / "state" / "notion_scrum" / "people_state.json"
     staffing_risks = None
+    
+    # Try staffing snapshot cache first
     if staffing_snapshot_path.exists():
         try:
             snapshot = _read_json(staffing_snapshot_path)
@@ -506,6 +509,76 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
         except Exception as exc:
             import sys
             print(f"WARNING: staffing snapshot load failed ({exc}); skipping staffing sections", file=sys.stderr)
+    # Fallback: build minimal staffing snapshot from people_state.json + board data
+    elif people_state_path.exists():
+        try:
+            # Define thresholds locally (same defaults as staffing_risk.detect_risks)
+            overload_projects_threshold = 3
+            overload_tasks_threshold = 8
+            
+            people_state = _read_json(people_state_path)
+            # Build a minimal snapshot with people + their active task/project counts
+            snapshot_people = {}
+            for person_key, person in (people_state.get("people") or {}).items():
+                avail = person.get("availability", {})
+                capacity = person.get("capacity", {})
+                status = avail.get("status", "unknown")
+                bandwidth = capacity.get("bandwidth", "unknown")
+                # Count active tasks/projects for this person from board data
+                active_tasks_for_person = [t for t in tasks if person_key in (t.get("owner_person_keys") or [])]
+                active_projects_for_person = [p for p in projects if person_key in (p.get("owner_person_keys") or [])]
+                active_task_ids = [t["id"] for t in active_tasks_for_person]
+                active_project_ids = [p["id"] for p in active_projects_for_person]
+                overdue_task_ids = [t["id"] for t in active_tasks_for_person if (t.get("due_date") or "9999-99-99") < today_str]
+                snapshot_people[person_key] = {
+                    "canonical_person_key": person_key,
+                    "display_name": person.get("display_name", person_key),
+                    "availability_status": status,
+                    "bandwidth": bandwidth,
+                    "backup_person_key": avail.get("backup_person_key"),
+                    "active_task_ids": active_task_ids,
+                    "active_task_titles": [t.get("title", "<untitled>") for t in active_tasks_for_person],
+                    "active_tasks": len(active_task_ids),
+                    "active_project_ids": active_project_ids,
+                    "active_project_titles": [p.get("title", "<untitled>") for p in active_projects_for_person],
+                    "active_projects": len(active_project_ids),
+                    "overdue_tasks": len(overdue_task_ids),
+                    "risk_flags": [],
+                }
+                # Set risk flags
+                if status in {"leave", "ooo"}:
+                    snapshot_people[person_key]["risk_flags"].append("absent_owner")
+                    if not avail.get("backup_person_key"):
+                        snapshot_people[person_key]["risk_flags"].append("absent_no_backup")
+                if len(active_project_ids) >= overload_projects_threshold or len(active_task_ids) >= overload_tasks_threshold:
+                    snapshot_people[person_key]["risk_flags"].append("overloaded")
+                if bandwidth in {"reduced", "limited"} and len(overdue_task_ids) > 0:
+                    snapshot_people[person_key]["risk_flags"].append("reduced_bandwidth_overdue")
+            
+            # Build project_effective_owners
+            project_effective_owners = {}
+            for project in projects:
+                project_id = project["id"]
+                owner_keys = project.get("owner_person_keys") or []
+                has_absent = any(
+                    snapshot_people.get(ok, {}).get("availability_status") in {"leave", "ooo"}
+                    for ok in owner_keys
+                )
+                project_effective_owners[project_id] = {
+                    "board_owner_person_keys": owner_keys,
+                    "has_absent_owner": has_absent,
+                }
+            
+            snapshot = {
+                "schema_version": "1.0",
+                "generated_at": utc_now_iso(),
+                "people": snapshot_people,
+                "project_effective_owners": project_effective_owners,
+            }
+            staffing_risks = staffing_risk.detect_risks(snapshot)
+        except Exception as exc:
+            import sys
+            print(f"WARNING: people_state fallback failed ({exc}); skipping staffing sections", file=sys.stderr)
 
     report = {
         "generated_at_ict": now.strftime("%Y-%m-%d %H:%M ICT"),

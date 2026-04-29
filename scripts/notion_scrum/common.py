@@ -38,7 +38,9 @@ def load_json(path: Path, default: Any | None = None) -> Any:
 
 def save_json(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp_path = path.with_name(f".{path.name}.tmp")
+    tmp_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    os.replace(tmp_path, path)
 
 
 def append_jsonl(path: Path, record: dict[str, Any]) -> None:
@@ -62,8 +64,20 @@ def load_api_key() -> str:
     env_path = Path.home() / ".hermes" / ".env"
     if env_path.exists():
         for line in env_path.read_text(encoding="utf-8").splitlines():
-            if line.startswith("NOTION_API_KEY="):
-                return line.split("=", 1)[1].strip()
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            env_key, _, env_value = line.partition("=")
+            env_key = env_key.strip()
+            env_value = env_value.strip()
+            if env_key == "NOTION_API_KEY":
+                if (env_value.startswith('"') and env_value.endswith('"')) or (env_value.startswith("'") and env_value.endswith("'")):
+                    env_value = env_value[1:-1]
+                if "#" in env_value:
+                    env_value = env_value.split("#", 1)[0].strip()
+                return env_value
     raise SystemExit("NOTION_API_KEY not found in environment or ~/.hermes/.env")
 
 
@@ -141,3 +155,25 @@ def find_person_by_platform_identity(
         return None
     canonical = (registry.get("identity_index") or {}).get(external_identity_key(platform, platform_user_id))
     return find_person_by_canonical_key(registry, canonical)
+
+
+def find_person_by_email(registry: dict[str, Any], email: str | None) -> dict[str, Any] | None:
+    if not email:
+        return None
+    email_lower = email.lower().strip()
+    for person in (registry.get("people") or {}).values():
+        person_email = (person.get("notion") or {}).get("email", "").lower().strip()
+        if person_email == email_lower:
+            return person
+    return None
+
+
+def find_person_by_email(registry: dict[str, Any], email: str | None) -> dict[str, Any] | None:
+    if not email:
+        return None
+    email_lower = email.lower().strip()
+    for person in (registry.get("people") or {}).values():
+        person_email = (person.get("notion") or {}).get("email", "").lower().strip()
+        if person_email == email_lower:
+            return person
+    return None

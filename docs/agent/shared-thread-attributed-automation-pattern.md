@@ -38,6 +38,10 @@ Use platform runtime identifiers as the authority:
 
 Display names are useful for comments and logs, but they are not identity.
 
+Board/channel defaults for common wrappers are bootstrapped separately from:
+- `config/notion_scrum/board_config.json`
+- `config/notion_scrum/board_config.example.json`
+
 Current implementation:
 
 - `scripts/notion_scrum/person_resolution.py`
@@ -139,7 +143,14 @@ The Level 3 operator surface is:
 - `process_inbound_reply.py` - resolve, match, plan, and dry-run or execute an update.
 - `preflight.py` - validate local registry and prompt state.
 
-Low-level scripts remain useful for debugging, but routine operation should use the Level 3 entrypoints.
+The Level 3.5 convenience wrapper surface is:
+
+- `query_common_view.py` - render common board query requests.
+- `prepare_prompt.py` - render common outbound prompt payloads.
+- `prepare_notion_patch.py` - render common Notion patch payloads.
+- `prepare_inbound_event.py` - render common inbound event payloads.
+
+Low-level scripts remain useful for debugging, but routine operation should prefer wrappers first, then Level 3 entrypoints, then low-level scripts only when needed.
 
 ## Safety Invariants
 
@@ -182,6 +193,12 @@ scripts/notion_scrum/
   plan_notion_update.py      # Notion Scrum update planner
   notion_adapter.py          # Notion adapter boundary
   apply_notion_update.py     # Notion write implementation
+  template_catalog.py        # reusable payload templates
+  board_config.py            # local board/channel config loader
+  query_common_view.py       # common board query wrapper
+  prepare_prompt.py          # common outbound prompt wrapper
+  prepare_notion_patch.py    # common Notion patch wrapper
+  prepare_inbound_event.py   # common inbound event wrapper
   create_pending_prompt.py   # Level 3 outbound prompt entrypoint
   process_inbound_reply.py   # Level 3 inbound reply entrypoint
   preflight.py               # Level 3 state health check
