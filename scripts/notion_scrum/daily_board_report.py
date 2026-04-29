@@ -230,11 +230,20 @@ def _owner_label(
 
 
 
+def _first_project_title(item: dict[str, Any]) -> str:
+    """Extract first project title from item, with fallbacks."""
+    project_titles = item.get("project_titles") or []
+    if project_titles:
+        return project_titles[0]
+    project = item.get("project") or ""
+    return project if project else "Unknown project"
+
+
 def _group_tasks(items: list[dict[str, Any]]) -> dict[tuple[str, tuple[str, ...]], list[str]]:
     grouped: dict[tuple[str, tuple[str, ...]], list[str]] = {}
     for item in items:
         key = (
-            item.get("project_titles", [item.get("project") or "Unknown project"])[0] if item.get("project_titles") else (item.get("project") or "Unknown project"),
+            _first_project_title(item),
             tuple(item.get("owner_person_keys") or []),
         )
         grouped.setdefault(key, []).append(item.get("title") or item.get("task") or "<untitled>")
@@ -286,7 +295,7 @@ def _aggregate_project_warnings(report: dict[str, Any]) -> list[dict[str, Any]]:
             (
                 item
                 for item in (report.get("ownerless_tasks") or [])
-                if ((item.get("project_titles") or [item.get("project") or "Unknown project"])[0] == project_title
+                if (_first_project_title(item) == project_title
                     and tuple(item.get("owner_person_keys") or []) == owner_keys)
             ),
             None,
@@ -301,7 +310,7 @@ def _aggregate_project_warnings(report: dict[str, Any]) -> list[dict[str, Any]]:
             (
                 item
                 for item in (report.get("undated_tasks") or [])
-                if ((item.get("project_titles") or [item.get("project") or "Unknown project"])[0] == project_title
+                if (_first_project_title(item) == project_title
                     and tuple(item.get("owner_person_keys") or []) == owner_keys)
             ),
             None,
