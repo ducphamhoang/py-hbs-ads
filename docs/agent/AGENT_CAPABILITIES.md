@@ -6,6 +6,24 @@ This is the master reference for agents (Hermes, Nemo, etc.) to understand what 
 
 ---
 
+## ⚠️ BEFORE YOU ACT — Agent Startup Checklist
+
+Complete these checks before executing any operation:
+
+1. **config/notion_scrum/board_config.json readable?**  
+   Bootstrap from `board_config.example.json` if missing.
+
+2. **Cache is fresh (age ≤ 300s)?**  
+   If not: run `sync_board_cache.py` first.
+
+3. **Staffing-aware mode?**  
+   If `state/notion_scrum/cache/staffing_snapshot.json` exists, staffing awareness is active. See [STAFFING_AND_PEOPLE_STATE.md](./STAFFING_AND_PEOPLE_STATE.md) § Assignment Boundary (CRITICAL rule).
+
+4. **Request parseable by update_by_title.py?**  
+   Confirm instruction matches a supported pattern (status, date, note, block).
+
+---
+
 ## Quick Tool Reference
 
 | Tool | Purpose | Input | Output | Use When |
@@ -51,7 +69,7 @@ Step 4: Verify
 
 ---
 
-### 2. Query Active (Non-Done) Items
+### 2. Query Active (Non-Done) Items [staffing-aware]
 
 **User request:** "Show active projects" / "Show tasks without owners"
 
@@ -64,13 +82,21 @@ Step 1: Choose view
 
 Step 2: Parse results
   → Extract: count, items[], data_source_id
+
+Step 3: If staffing-aware (staffing_snapshot.json exists)
+  → Check each task/project owner against staffing snapshot
+  → If owner is absent (leave/ooo):
+     See STAFFING_AND_PEOPLE_STATE.md § Routing Decision Table
+     Route follow-up to backup or escalate
 ```
 
 **Use case:** Quick overview without needing cache updates
 
+**Staffing note:** If results include tasks with absent owners, see [STAFFING_AND_PEOPLE_STATE.md](./STAFFING_AND_PEOPLE_STATE.md) for routing recommendations before taking follow-up action.
+
 ---
 
-### 3. Blocking a Task (with reason)
+### 3. Blocking a Task (with reason) [staffing-aware]
 
 **User request:** "Block task X because Y"
 
@@ -86,6 +112,10 @@ Step 1: Parse instruction
 Step 2: Confirm
   → query_board_cache.py --kind tasks --title X
   → Check: Status = "Blocked", "Blocked reason" = "missing asset"
+
+Step 3: If staffing-aware and owner is absent
+  → Note in blocked reason: mention that owner is on leave
+  → Consider routing follow-up to backup instead (see STAFFING_AND_PEOPLE_STATE.md)
 ```
 
 **Supported formats (English):**
@@ -97,6 +127,8 @@ block task X of project Y because Z
 ```
 đánh dấu blocked task X của project Y vì Z
 ```
+
+**Staffing note:** If blocking a task with an absent owner, add context to the reason field (e.g., "missing asset + owner on leave, backup is @ducph") to guide routing.
 
 ---
 
@@ -288,18 +320,6 @@ File: `config/notion_scrum/board_config.json`
 
 ---
 
-## Agent Startup Checklist
-
-When Hermes/Nemo starts, verify:
-
-- [ ] `config/notion_scrum/board_config.json` exists and is readable
-- [ ] `state/notion_scrum/cache/` directory exists
-- [ ] API key is available (from `common.py::load_api_key()`)
-- [ ] If cache age > 300s, call `sync_board_cache.py` first
-- [ ] User request is parseable by `update_by_title.py` pattern matching
-
----
-
 ## Script Dependencies (Calling Order)
 
 ```
@@ -418,221 +438,6 @@ python scripts/notion_scrum/template_catalog.py \
 
 ---
 
-## Staffing Snapshot Operations
-
-### 6.1 When is Staffing Awareness Active?
-
-- Staffing awareness activates when `state/notion_scrum/cache/staffing_snapshot.json` exists
-- Without snapshot → agents fall back to board_cache-only mode (COMPAT-01)
-- Snapshot is optional; all core operations work without it
-
-### 6.2 Building Staffing Snapshot
-
-**Tool:** `build_staffing_snapshot.py`
-**Inputs:** team_registry.json, people_state.json, board_snapshot.json
-**Output:** staffing_snapshot.json
-
-Pattern:
-```python
-from build_staffing_snapshot import build_staffing_snapshot
-registry = load_registry(DEFAULT_TEAM_REGISTRY)
-people_state = load_people_state(DEFAULT_PEOPLE_STATE)
-board_snapshot = load_json(DEFAULT_BOARD_CACHE)
-snapshot = build_staffing_snapshot(registry, people_state, board_snapshot, today_iso)
-save_json(DEFAULT_STAFFING_SNAPSHOT, snapshot)
-```
-
-Snapshot includes:
-- Per-person active projects/tasks/overdue counts
-- Risk flags (absent_owner, absent_no_backup)
-- Backup person keys
-- Project effective owners
-- Unresolved owner IDs
-
-**Cache freshness:** Snapshot should be refreshed whenever board_snapshot is updated.
-
-### 6.3 Detecting Staffing Risks
-
-**Tool:** `staffing_risk.py::detect_risks(snapshot)`
-**Output:** Five risk categories (see § Staffing Risk Categories)
-
-When to call:
-- Daily board report generation
-- Before routing decisions for absent-owner tasks
-- Operator queries for staffing status
-
-Thresholds (configurable):
-- overload_projects_threshold: 3 (default)
-- overload_tasks_threshold: 8 (default)
-
-### 6.4 Computing Routing Recommendations
-
-**Tool:** `staffing_risk.py::compute_routing_recommendation(snapshot_person, people_state=None)`
-**Output:** (target_person_key, routing_reason)
-
-Routing decisions:
-- If owner active → route to owner
-- If owner absent + backup → route to backup (reason: owner_absent_backup_used)
-- If owner absent + no backup → route to manager/admin (reason: owner_absent_no_backup)
-
-**Critical:** Recommendations are observation-only. Never mutate Notion page ownership.
-
----
-
-## People State Management
-
-### 7.1 Three-Layer State Model
-
-People state has four layers:
-1. **Availability** — Leave dates, OOO status, backup assignments
-2. **Capacity** — Bandwidth (normal/reduced/limited), notes
-3. **Coordination** — Default followup policy, backup override
-4. **Metadata** — Tags, last update tracking
-
-File: `state/notion_scrum/people_state.json`
-Manage via: `update_people_state.py`, `query_people_state.py`
-
-### 7.2 Valid Values
-
-**Availability statuses:** active, leave, ooo, partial, unknown
-**Bandwidth values:** normal, reduced, limited, unknown
-
-### 7.3 Operator Commands
-
-#### Set Leave (with backup)
-```bash
-python update_people_state.py \
-  --action set-leave \
-  --person duc \
-  --since 2026-05-01 \
-  --until 2026-05-15 \
-  --backup ma \
-  --note "Annual leave"
-```
-
-#### Clear Leave
-```bash
-python update_people_state.py \
-  --action clear-leave \
-  --person duc
-```
-
-#### Set Bandwidth
-```bash
-python update_people_state.py \
-  --action set-bandwidth \
-  --person duc \
-  --bandwidth reduced \
-  --note "Back-to-school week"
-```
-
-#### Set Backup (Coordination Override)
-```bash
-python update_people_state.py \
-  --action set-backup \
-  --person duc \
-  --backup ma
-```
-
-### 7.4 Query Commands
-
-#### Query Single Person
-```bash
-python query_people_state.py --query person --person duc
-```
-Returns: availability, capacity, coordination, metadata, effective backup
-
-#### Query On-Leave Today
-```bash
-python query_people_state.py --query on-leave-today --today 2026-05-01
-```
-
-#### Query Reduced Bandwidth
-```bash
-python query_people_state.py --query reduced-bandwidth
-```
-
-#### Query Backup For Person
-```bash
-python query_people_state.py --query backup-for --person duc
-```
-Returns: availability backup, coordination backup, effective routing target
-
-### 7.5 Assignment Boundary (CRITICAL)
-
-**Rule:** Active project/task assignments ALWAYS derive from:
-- `board_snapshot.json` owner_ids
-- `team_registry.json` Notion user ID mappings
-
-**Never from:** `people_state.json`
-
-**Why?** Decoupling: people_state is transient state (leave, bandwidth). Board is source of truth. Board-snapshot must be fresh when computing staffing snapshot.
-
-**Consequence:** Setting people_state.availability.backup_person_key does NOT auto-update Notion page ownership. It's a routing hint, not a board mutation.
-
-When absent person returns: Their existing assignments remain; routing falls back to normal.
-
----
-
-## Staffing Risk Categories
-
-### 8.1 Five Risk Categories
-
-Returned by `detect_risks(staffing_snapshot)`:
-
-#### RISK-01: absent_owner_tasks
-Tasks assigned to people who are currently absent (leave/ooo).
-Includes backup person key if assigned.
-
-Use: Alert follow-up agents to route task to backup. Update daily report.
-
-#### RISK-02: absent_owner_projects
-Projects with effective owner who is absent.
-
-Use: Escalate project status checks. Notify stakeholders.
-
-#### RISK-03: absent_no_backup
-People marked absent with NO backup assigned.
-
-**Critical risk.** People who are gone + unreachable = potential blocker.
-
-Use: Route all their tasks to manager. Send notification.
-
-#### RISK-04: overloaded_owners
-People with 3+ projects OR 8+ tasks (thresholds configurable).
-
-Use: Offer capacity reduction. Alert manager.
-
-#### RISK-05: reduced_bandwidth_with_overdue
-People with reduced/limited bandwidth AND >0 overdue tasks.
-
-Use: Increase support. Extend deadlines.
-
-### 8.2 Daily Report Integration
-
-When `staffing_snapshot.json` exists and `detect_risks()` finds any risks:
-- Append four Vietnamese staffing sections to daily_check_message
-- Include backup Discord tokens (@@discord_user_id:BOB_DISCORD_ID@@) for absent tasks
-- Preserve for dashboard consumption (parsing via tokens)
-
-No staffing sections if snapshot absent (COMPAT-01).
-
-### 8.3 Threshold Configuration
-
-In `staffing_risk.py`:
-```python
-detect_risks(
-    snapshot,
-    overload_projects_threshold=3,
-    overload_tasks_threshold=8
-)
-```
-
-Default thresholds: 3 projects, 8 tasks.
-Override via function arguments or config file (to be specified).
-
----
-
 ## Example: Complete Workflow (Project + All Tasks)
 
 **User:** "Complete project 'Game teaser 03' and all its tasks"
@@ -697,8 +502,9 @@ return f"✓ Updated {len(results)} items to Complete"
 
 **I need to...**
 
-**← Query projects/tasks?**
-→ Use `query_common_view.py` (live) or `query_board_cache.py` (cached)
+**← Query projects/tasks?** [staffing-aware]
+→ Use `query_common_view.py` (live) or `query_board_cache.py` (cached)  
+→ If staffing-aware: verify absent owners against [STAFFING_AND_PEOPLE_STATE.md](./STAFFING_AND_PEOPLE_STATE.md) before routing follow-up
 
 **← Find a specific task by title?**
 → Use `query_board_cache.py --kind tasks --title X` (requires fresh cache)
@@ -708,6 +514,14 @@ return f"✓ Updated {len(results)} items to Complete"
 
 **← Update many items (bulk)?**
 → Use `resolve_prepare_apply_patch.py --target-kind tasks` in a loop
+
+**← Create a project or task?**
+→ Use `template_catalog.py --template create_project` or `create_task`  
+→ See § Template Catalog for field reference and examples
+
+**← Block a task?** [staffing-aware]
+→ Use `update_by_title.py --instruction "block task X because Y"`  
+→ If owner absent: add context to reason (e.g., "+ owner on leave, backup is @ducph")
 
 **← Cache is slow or stale?**
 → Call `sync_board_cache.py` first
@@ -735,6 +549,6 @@ return f"✓ Updated {len(results)} items to Complete"
 
 ---
 
-**Last updated:** 2026-04-28  
+**Last updated:** 2026-04-29 (restructured: moved Startup Checklist to top, removed staffing sections → see [STAFFING_AND_PEOPLE_STATE.md](./STAFFING_AND_PEOPLE_STATE.md))  
 **Maintained by:** Hermes / Agent System  
 **Contact for updates:** See `.planning/PROJECT.md`
