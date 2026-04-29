@@ -117,6 +117,19 @@ def _status_name(prop: dict[str, Any] | None) -> str | None:
 
 
 
+def _is_overdue(due_date_str: str | None, today: str) -> bool:
+    """Compare dates safely, assuming ISO format."""
+    if not due_date_str:
+        return False
+    try:
+        due_date = datetime.fromisoformat(due_date_str).date() if 'T' in due_date_str else datetime.fromisoformat(due_date_str)
+        today_date = datetime.fromisoformat(today).date()
+        return due_date < today_date
+    except (ValueError, AttributeError):
+        # Fallback to string comparison with warning
+        return due_date_str < today
+
+
 def _date_start(prop: dict[str, Any] | None) -> str | None:
     if not prop:
         return None
@@ -546,7 +559,7 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
                 active_projects_for_person = [p for p in projects if person_key in (p.get("owner_person_keys") or [])]
                 active_task_ids = [t["id"] for t in active_tasks_for_person]
                 active_project_ids = [p["id"] for p in active_projects_for_person]
-                overdue_task_ids = [t["id"] for t in active_tasks_for_person if (t.get("due_date") or "9999-99-99") < today_str]
+                overdue_task_ids = [t["id"] for t in active_tasks_for_person if _is_overdue(t.get("due_date"), today_str)]
                 snapshot_people[person_key] = {
                     "canonical_person_key": person_key,
                     "display_name": person.get("display_name", person_key),
