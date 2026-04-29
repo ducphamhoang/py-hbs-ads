@@ -537,7 +537,7 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
         try:
             snapshot = _read_json(staffing_snapshot_path)
             staffing_risks = staffing_risk.detect_risks(snapshot)
-        except Exception as exc:
+        except (json.JSONDecodeError, FileNotFoundError, KeyError) as exc:
             print(f"WARNING: staffing snapshot load failed ({exc}); skipping staffing sections", file=sys.stderr)
     # Fallback: build minimal staffing snapshot from people_state.json + board data
     elif people_state_path.exists():
@@ -606,7 +606,7 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
                 "project_effective_owners": project_effective_owners,
             }
             staffing_risks = staffing_risk.detect_risks(snapshot)
-        except Exception as exc:
+        except (json.JSONDecodeError, FileNotFoundError, KeyError, ValueError) as exc:
             print(f"WARNING: people_state fallback failed ({exc}); skipping staffing sections", file=sys.stderr)
 
     report = {
