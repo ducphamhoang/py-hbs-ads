@@ -418,6 +418,221 @@ python scripts/notion_scrum/template_catalog.py \
 
 ---
 
+## Staffing Snapshot Operations
+
+### 6.1 When is Staffing Awareness Active?
+
+- Staffing awareness activates when `state/notion_scrum/cache/staffing_snapshot.json` exists
+- Without snapshot → agents fall back to board_cache-only mode (COMPAT-01)
+- Snapshot is optional; all core operations work without it
+
+### 6.2 Building Staffing Snapshot
+
+**Tool:** `build_staffing_snapshot.py`
+**Inputs:** team_registry.json, people_state.json, board_snapshot.json
+**Output:** staffing_snapshot.json
+
+Pattern:
+```python
+from build_staffing_snapshot import build_staffing_snapshot
+registry = load_registry(DEFAULT_TEAM_REGISTRY)
+people_state = load_people_state(DEFAULT_PEOPLE_STATE)
+board_snapshot = load_json(DEFAULT_BOARD_CACHE)
+snapshot = build_staffing_snapshot(registry, people_state, board_snapshot, today_iso)
+save_json(DEFAULT_STAFFING_SNAPSHOT, snapshot)
+```
+
+Snapshot includes:
+- Per-person active projects/tasks/overdue counts
+- Risk flags (absent_owner, absent_no_backup)
+- Backup person keys
+- Project effective owners
+- Unresolved owner IDs
+
+**Cache freshness:** Snapshot should be refreshed whenever board_snapshot is updated.
+
+### 6.3 Detecting Staffing Risks
+
+**Tool:** `staffing_risk.py::detect_risks(snapshot)`
+**Output:** Five risk categories (see § Staffing Risk Categories)
+
+When to call:
+- Daily board report generation
+- Before routing decisions for absent-owner tasks
+- Operator queries for staffing status
+
+Thresholds (configurable):
+- overload_projects_threshold: 3 (default)
+- overload_tasks_threshold: 8 (default)
+
+### 6.4 Computing Routing Recommendations
+
+**Tool:** `staffing_risk.py::compute_routing_recommendation(snapshot_person, people_state=None)`
+**Output:** (target_person_key, routing_reason)
+
+Routing decisions:
+- If owner active → route to owner
+- If owner absent + backup → route to backup (reason: owner_absent_backup_used)
+- If owner absent + no backup → route to manager/admin (reason: owner_absent_no_backup)
+
+**Critical:** Recommendations are observation-only. Never mutate Notion page ownership.
+
+---
+
+## People State Management
+
+### 7.1 Three-Layer State Model
+
+People state has four layers:
+1. **Availability** — Leave dates, OOO status, backup assignments
+2. **Capacity** — Bandwidth (normal/reduced/limited), notes
+3. **Coordination** — Default followup policy, backup override
+4. **Metadata** — Tags, last update tracking
+
+File: `state/notion_scrum/people_state.json`
+Manage via: `update_people_state.py`, `query_people_state.py`
+
+### 7.2 Valid Values
+
+**Availability statuses:** active, leave, ooo, partial, unknown
+**Bandwidth values:** normal, reduced, limited, unknown
+
+### 7.3 Operator Commands
+
+#### Set Leave (with backup)
+```bash
+python update_people_state.py \
+  --action set-leave \
+  --person duc \
+  --since 2026-05-01 \
+  --until 2026-05-15 \
+  --backup ma \
+  --note "Annual leave"
+```
+
+#### Clear Leave
+```bash
+python update_people_state.py \
+  --action clear-leave \
+  --person duc
+```
+
+#### Set Bandwidth
+```bash
+python update_people_state.py \
+  --action set-bandwidth \
+  --person duc \
+  --bandwidth reduced \
+  --note "Back-to-school week"
+```
+
+#### Set Backup (Coordination Override)
+```bash
+python update_people_state.py \
+  --action set-backup \
+  --person duc \
+  --backup ma
+```
+
+### 7.4 Query Commands
+
+#### Query Single Person
+```bash
+python query_people_state.py --query person --person duc
+```
+Returns: availability, capacity, coordination, metadata, effective backup
+
+#### Query On-Leave Today
+```bash
+python query_people_state.py --query on-leave-today --today 2026-05-01
+```
+
+#### Query Reduced Bandwidth
+```bash
+python query_people_state.py --query reduced-bandwidth
+```
+
+#### Query Backup For Person
+```bash
+python query_people_state.py --query backup-for --person duc
+```
+Returns: availability backup, coordination backup, effective routing target
+
+### 7.5 Assignment Boundary (CRITICAL)
+
+**Rule:** Active project/task assignments ALWAYS derive from:
+- `board_snapshot.json` owner_ids
+- `team_registry.json` Notion user ID mappings
+
+**Never from:** `people_state.json`
+
+**Why?** Decoupling: people_state is transient state (leave, bandwidth). Board is source of truth. Board-snapshot must be fresh when computing staffing snapshot.
+
+**Consequence:** Setting people_state.availability.backup_person_key does NOT auto-update Notion page ownership. It's a routing hint, not a board mutation.
+
+When absent person returns: Their existing assignments remain; routing falls back to normal.
+
+---
+
+## Staffing Risk Categories
+
+### 8.1 Five Risk Categories
+
+Returned by `detect_risks(staffing_snapshot)`:
+
+#### RISK-01: absent_owner_tasks
+Tasks assigned to people who are currently absent (leave/ooo).
+Includes backup person key if assigned.
+
+Use: Alert follow-up agents to route task to backup. Update daily report.
+
+#### RISK-02: absent_owner_projects
+Projects with effective owner who is absent.
+
+Use: Escalate project status checks. Notify stakeholders.
+
+#### RISK-03: absent_no_backup
+People marked absent with NO backup assigned.
+
+**Critical risk.** People who are gone + unreachable = potential blocker.
+
+Use: Route all their tasks to manager. Send notification.
+
+#### RISK-04: overloaded_owners
+People with 3+ projects OR 8+ tasks (thresholds configurable).
+
+Use: Offer capacity reduction. Alert manager.
+
+#### RISK-05: reduced_bandwidth_with_overdue
+People with reduced/limited bandwidth AND >0 overdue tasks.
+
+Use: Increase support. Extend deadlines.
+
+### 8.2 Daily Report Integration
+
+When `staffing_snapshot.json` exists and `detect_risks()` finds any risks:
+- Append four Vietnamese staffing sections to daily_check_message
+- Include backup Discord tokens (@@discord_user_id:BOB_DISCORD_ID@@) for absent tasks
+- Preserve for dashboard consumption (parsing via tokens)
+
+No staffing sections if snapshot absent (COMPAT-01).
+
+### 8.3 Threshold Configuration
+
+In `staffing_risk.py`:
+```python
+detect_risks(
+    snapshot,
+    overload_projects_threshold=3,
+    overload_tasks_threshold=8
+)
+```
+
+Default thresholds: 3 projects, 8 tasks.
+Override via function arguments or config file (to be specified).
+
+---
+
 ## Example: Complete Workflow (Project + All Tasks)
 
 **User:** "Complete project 'Game teaser 03' and all its tasks"
