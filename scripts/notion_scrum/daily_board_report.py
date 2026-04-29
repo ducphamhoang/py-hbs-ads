@@ -464,9 +464,14 @@ def build_report(*, root: Path | None = None, now: datetime | None = None) -> tu
         project_ids = task.get("project_ids") or []
         return not project_ids or any(project_id in active_project_ids for project_id in project_ids)
 
-    tasks = [task for task in (_compact_task_with_people(page, project_titles, notion_user_to_person) for page in active_task_pages) if keep_task(task)]
-    ownerless_tasks = [task for task in (_compact_task_with_people(page, project_titles, notion_user_to_person) for page in ownerless_pages) if keep_task(task)]
-    undated_tasks = [task for task in (_compact_task_with_people(page, project_titles, notion_user_to_person) for page in undated_pages) if keep_task(task)]
+    all_tasks = [_compact_task_with_people(page, project_titles, notion_user_to_person) for page in active_task_pages]
+    tasks = [task for task in all_tasks if keep_task(task)]
+
+    ownerless_compact = [_compact_task_with_people(page, project_titles, notion_user_to_person) for page in ownerless_pages]
+    ownerless_tasks = [task for task in ownerless_compact if keep_task(task)]
+
+    undated_compact = [_compact_task_with_people(page, project_titles, notion_user_to_person) for page in undated_pages]
+    undated_tasks = [task for task in undated_compact if keep_task(task)]
 
     action_items = []
     today_str = now.date().isoformat()
