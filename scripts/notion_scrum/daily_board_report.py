@@ -113,7 +113,7 @@ def _text_value(prop: dict[str, Any] | None, field: str) -> str:
 def _status_name(prop: dict[str, Any] | None) -> str | None:
     if not prop:
         return None
-    return ((prop.get("status") or {}).get("name") or None)
+    return (prop.get("status") or {}).get("name") or None
 
 
 
