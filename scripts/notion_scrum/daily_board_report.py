@@ -27,7 +27,6 @@ TEXT_BLOCK_TYPES = {
 }
 PLACEHOLDER_CONTENT_MARKERS = {
     "provide an overview of the project’s goals and context",
-    "provide an overview of the project's goals and context",
     "tbu",
     "tbd",
     "todo",
