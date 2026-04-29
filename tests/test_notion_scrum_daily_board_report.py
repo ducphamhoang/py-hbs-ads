@@ -191,9 +191,6 @@ def test_project_data_warnings_are_grouped_into_single_project_line() -> None:
     assert message.count("[CTB] V - Meme US") == 1
     assert "project **[CTB] V - Meme US** thiếu: **sub task; 2 task thiếu owner (AE polish pass; Unity implementation pass); 2 task thiếu due date (AE polish pass; Unity implementation pass)**" in message
 
-
-import json
-
 FAKE_RISKS = {
     "schema_version": "1.0",
     "generated_at": "2026-04-24T00:00:00+07:00",
