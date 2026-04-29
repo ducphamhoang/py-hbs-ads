@@ -2,8 +2,8 @@
 
 ## Current State
 
-**Shipped milestone:** v2.0 Hermes Discord ↔ Notion Scrum Level 2+3  
-**Shipped date:** 2026-04-22  
+**Shipped milestone:** v3.0 Staffing-Aware Discord↔Notion Scrum  
+**Shipped date:** 2026-04-29  
 **Current focus:** Between milestones; ready for `$gsd-new-milestone`.
 
 v2.0 delivered the Hermes Discord ↔ Notion Scrum workflow as a reusable attributed-automation pattern:
@@ -116,5 +116,10 @@ Legacy SharePoint live-auth work was archived as a legacy backlog item and is no
 
 This document evolves at phase transitions and milestone boundaries.
 
+Milestones shipped:
+- **v1.0** (2026-03-21) — Python CLI foundation and v1 Hermes
+- **v2.0** (2026-04-22) — Level 2+3 shared modules, operator entrypoints, Notion adapter
+- **v3.0** (2026-04-29) — People-state layer, staffing awareness, risk detection, routing
+
 ---
-*Last updated: 2026-04-24 after Phase 13*
+*Last updated: 2026-04-29 after v3.0 milestone completion*

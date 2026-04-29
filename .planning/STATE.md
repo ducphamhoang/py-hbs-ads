@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Staffing-Aware Discord↔Notion Scrum
-status: planning
-stopped_at: context exhaustion at 90% (2026-04-29)
-last_updated: "2026-04-29T09:48:50.371Z"
+status: shipped
+shipped_date: "2026-04-29"
+last_updated: "2026-04-29T16:50:00Z"
 last_activity: 2026-04-29
 progress:
   total_phases: 6
