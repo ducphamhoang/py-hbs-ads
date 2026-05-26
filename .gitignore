@@ -30,7 +30,7 @@ logs/
 
 # Generated outputs
 generated_variants/
-sharepoint/
+/sharepoint/
 
 # Operational / runtime data (ad assets, inbox, reports, voiceover)
 VARIANTS/
