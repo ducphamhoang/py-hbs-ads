@@ -41,15 +41,40 @@ class CommandRunner:
             )
 
         started = time.perf_counter()
-        completed = subprocess.run(
-            args,
-            cwd=str(cwd) if cwd else None,
-            env=self.env,
-            capture_output=True,
-            text=True,
-            timeout=timeout if timeout is not None else self.default_timeout,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                args,
+                cwd=str(cwd) if cwd else None,
+                env=self.env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=timeout if timeout is not None else self.default_timeout,
+                check=False,
+            )
+        except FileNotFoundError:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            return ExecutionResult(
+                args=args,
+                returncode=-1,
+                stdout="",
+                stderr=f"Command not found: {args[0] if args else 'empty'}",
+                duration_ms=duration_ms,
+                dry_run=False,
+                cwd=str(cwd) if cwd else None,
+            )
+        except subprocess.TimeoutExpired as exc:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            return ExecutionResult(
+                args=args,
+                returncode=-124,
+                stdout=str(exc.stdout or ""),
+                stderr=f"Command timed out after {timeout}s",
+                duration_ms=duration_ms,
+                dry_run=False,
+                cwd=str(cwd) if cwd else None,
+            )
         duration_ms = int((time.perf_counter() - started) * 1000)
         return ExecutionResult(
             args=args,

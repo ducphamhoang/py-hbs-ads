@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 import shutil
+import time
 from pathlib import Path
 from typing import Protocol
 from urllib.error import HTTPError, URLError
@@ -489,23 +490,32 @@ class M365SharePointClient:
         method: str = "GET",
         content_type: str | None = None,
         body: bytes | None = None,
+        max_retries: int = 3,
     ) -> dict[str, object]:
         headers = self._headers(token, content_type=content_type)
         request = Request(url, data=body, headers=headers, method=method)
-        try:
-            with urlopen(request, timeout=120) as response:
-                payload = response.read().decode("utf-8")
-        except HTTPError as exc:
-            message = exc.read().decode("utf-8", errors="replace")
-            raise AppError(f"SharePoint request failed with HTTP {exc.code}: {message}") from exc
-        except URLError as exc:
-            raise AppError(f"SharePoint request failed: {exc.reason}") from exc
-        if not payload:
-            return {}
-        try:
-            return json.loads(payload)
-        except json.JSONDecodeError:
-            return {}
+        last_exc: Exception | None = None
+        for attempt in range(max_retries):
+            try:
+                with urlopen(request, timeout=120) as response:
+                    payload = response.read().decode("utf-8")
+                    return json.loads(payload) if payload else {}
+            except HTTPError as exc:
+                if exc.code == 429 and attempt < max_retries - 1:
+                    retry_after = int(exc.headers.get("Retry-After", 5))
+                    time.sleep(min(retry_after, 60))
+                    continue
+                message = exc.read().decode("utf-8", errors="replace")
+                raise AppError(f"SharePoint request failed with HTTP {exc.code}: {message}") from exc
+            except URLError as exc:
+                last_exc = exc
+                if attempt < max_retries - 1:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                raise AppError(f"SharePoint request failed: {exc.reason}") from exc
+        if last_exc:
+            raise AppError(f"SharePoint request failed after {max_retries} retries") from last_exc
+        return {}
 
     def _headers(self, token: str, *, content_type: str | None = None) -> dict[str, str]:
         headers = {

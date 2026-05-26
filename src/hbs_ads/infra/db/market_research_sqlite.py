@@ -183,11 +183,12 @@ class MarketResearchSQLiteDB:
     def bootstrap(self) -> list[str]:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         applied: list[str] = []
-        with sqlite3.connect(self.path) as conn:
+        with sqlite3.connect(self.path, timeout=30.0) as conn:
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS mr_schema_migrations "
                 "(version TEXT PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
             )
+            conn.commit()
             existing = {
                 row[0]
                 for row in conn.execute("SELECT version FROM mr_schema_migrations").fetchall()
@@ -195,10 +196,14 @@ class MarketResearchSQLiteDB:
             for version, sql in MIGRATIONS:
                 if version in existing:
                     continue
-                conn.executescript(sql)
-                conn.execute("INSERT INTO mr_schema_migrations(version) VALUES (?)", (version,))
-                applied.append(version)
-            conn.commit()
+                try:
+                    conn.executescript(sql)
+                    conn.execute("INSERT INTO mr_schema_migrations(version) VALUES (?)", (version,))
+                    conn.commit()
+                    applied.append(version)
+                except Exception as e:
+                    conn.rollback()
+                    raise RuntimeError(f"Migration {version} failed: {e}") from e
         return applied
 
     # ------------------------------------------------------------------ #
@@ -441,25 +446,28 @@ class MarketResearchSQLiteDB:
         reviews: list[ReviewDecision],
     ) -> None:
         self.bootstrap()
-        self.upsert_run(
-            run_id=run_id,
-            brief_id=brief_id,
-            status=status,
-            operator=operator,
-            finished_at=finished_at,
-        )
-        for c in candidates:
-            self.upsert_candidate(c)
-        for vc in cluster_result.get("variant_clusters", []):
-            self.upsert_variant_cluster(vc)
-        for cc in cluster_result.get("concept_clusters", []):
-            self.upsert_concept_cluster(cc)
-        for a in analyses:
-            self.upsert_analysis(a)
-        for i in insights:
-            self.upsert_insight(i)
-        for r in reviews:
-            self.upsert_review(r)
+        try:
+            self.upsert_run(
+                run_id=run_id,
+                brief_id=brief_id,
+                status=status,
+                operator=operator,
+                finished_at=finished_at,
+            )
+            for c in candidates:
+                self.upsert_candidate(c)
+            for vc in cluster_result.get("variant_clusters", []):
+                self.upsert_variant_cluster(vc)
+            for cc in cluster_result.get("concept_clusters", []):
+                self.upsert_concept_cluster(cc)
+            for a in analyses:
+                self.upsert_analysis(a)
+            for i in insights:
+                self.upsert_insight(i)
+            for r in reviews:
+                self.upsert_review(r)
+        except Exception as e:
+            raise RuntimeError(f"sync_run failed for run_id={run_id}: {e}") from e
 
     # ------------------------------------------------------------------ #
     # Read helpers                                                         #

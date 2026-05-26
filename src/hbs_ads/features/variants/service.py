@@ -281,8 +281,10 @@ class VariantsService:
 
         archive_dir = layout.archive_dir / request.variant
         if not request.dry_run:
-            if archive_dir.exists():
-                shutil.rmtree(archive_dir)
+            try:
+                shutil.rmtree(archive_dir, ignore_errors=False)
+            except FileNotFoundError:
+                pass
             shutil.copytree(source_dir, archive_dir)
             self.database.upsert_variant(
                 VariantRecord(
@@ -340,7 +342,10 @@ class VariantsService:
         return configs
 
     def _load_configs(self, config_path: Path) -> list[VariantConfig]:
-        payload = json.loads(config_path.read_text(encoding="utf-8"))
+        try:
+            payload = json.loads(config_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, FileNotFoundError, UnicodeDecodeError) as e:
+            raise AppError(f"variant config invalid: {config_path}: {e}")
         if isinstance(payload, dict):
             payload = [payload]
         configs: list[VariantConfig] = []
@@ -371,7 +376,12 @@ class VariantsService:
         raise AppError(f"clip not found: {clip}")
 
     def _resolve_path(self, root: Path, path: Path) -> Path:
-        return path if path.is_absolute() else (root / path).resolve()
+        resolved = path if path.is_absolute() else (root / path).resolve()
+        try:
+            resolved.relative_to(root)
+        except ValueError:
+            raise AppError(f"path escapes workspace root: {path}")
+        return resolved
 
     def _should_use_placeholder_mode(self, clip_paths: list[Path]) -> bool:
         return not all(self._probe_media(path) is not None for path in clip_paths)

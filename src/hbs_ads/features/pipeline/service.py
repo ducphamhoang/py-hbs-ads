@@ -101,6 +101,14 @@ class PipelineService:
             IngestRunRequest(workspace_root=request.workspace_root, dry_run=request.dry_run)
         )
         stages.append({"stage": "ingest", "status": ingest_result.status, "message": ingest_result.message})
+        if ingest_result.status not in ("ok", "planned"):
+            return self._result_with_state(
+                message="pipeline failed at ingest stage",
+                status="failed",
+                state_path=request.workspace_root / "logs" / "pipeline-state.json",
+                dry_run=request.dry_run,
+                data={"mode": "full", "blocked": False, "stages": stages, "failed_at": "ingest"},
+            )
 
         cuts_path = request.workspace_root / "cuts.json"
         if cuts_path.exists():

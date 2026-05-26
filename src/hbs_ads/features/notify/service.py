@@ -71,11 +71,20 @@ class NotifyService:
             "timestamp": datetime.now(UTC).isoformat(),
         }
         if not dry_run:
+            import fcntl
             layout.logs_dir.mkdir(parents=True, exist_ok=True)
             with text_log.open("a", encoding="utf-8") as handle:
-                handle.write(f"{event['timestamp']} {action}: {message}\n")
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+                try:
+                    handle.write(f"{event['timestamp']} {action}: {message}\n")
+                finally:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
             with json_log.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(event) + "\n")
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+                try:
+                    handle.write(json.dumps(event) + "\n")
+                finally:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
         return CommandResult(
             status="planned" if dry_run else "ok",
             message=f"{action} {'planned' if dry_run else 'completed'}",
