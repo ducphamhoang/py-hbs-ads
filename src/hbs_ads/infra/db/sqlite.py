@@ -106,6 +106,8 @@ class SQLiteDatabase:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         applied: list[str] = []
         with sqlite3.connect(self.path) as conn:
+            conn.execute("PRAGMA busy_timeout = 30000")
+            conn.execute("BEGIN IMMEDIATE")
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -167,17 +169,29 @@ class SQLiteDatabase:
         query += " ORDER BY path"
         with sqlite3.connect(self.path) as conn:
             rows = conn.execute(query).fetchall()
+        def _parse_tags(raw: str) -> list[str]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return []
+
+        def _parse_analysis(raw: str) -> dict[str, object]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+
         return [
             ClipRecord(
                 path=row[0],
                 kind=row[1],
                 source_path=row[2],
                 status=row[3],
-                tags=json.loads(row[4]),
+                tags=_parse_tags(row[4]),
                 approved=bool(row[5]),
                 confidence=row[6],
                 gemini_tagged=bool(row[7]),
-                analysis=json.loads(row[8]),
+                analysis=_parse_analysis(row[8]),
             )
             for row in rows
         ]
@@ -231,14 +245,26 @@ class SQLiteDatabase:
             ).fetchone()
         if row is None:
             return None
+        def _parse_export_paths(raw: str) -> list[str]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return []
+
+        def _parse_metadata(raw: str) -> dict[str, object]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+
         return VariantRecord(
             name=row[0],
             config_path=row[1],
             status=row[2],
             render_path=row[3],
-            export_paths=json.loads(row[4]),
+            export_paths=_parse_export_paths(row[4]),
             archive_path=row[5],
-            metadata=json.loads(row[6]),
+            metadata=_parse_metadata(row[6]),
         )
 
     def list_variants(self) -> list[VariantRecord]:
@@ -251,15 +277,28 @@ class SQLiteDatabase:
                 ORDER BY name
                 """
             ).fetchall()
+
+        def _parse_export_paths(raw: str) -> list[str]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return []
+
+        def _parse_metadata(raw: str) -> dict[str, object]:
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+
         return [
             VariantRecord(
                 name=row[0],
                 config_path=row[1],
                 status=row[2],
                 render_path=row[3],
-                export_paths=json.loads(row[4]),
+                export_paths=_parse_export_paths(row[4]),
                 archive_path=row[5],
-                metadata=json.loads(row[6]),
+                metadata=_parse_metadata(row[6]),
             )
             for row in rows
         ]

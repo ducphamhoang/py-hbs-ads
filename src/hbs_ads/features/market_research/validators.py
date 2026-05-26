@@ -145,6 +145,12 @@ def validate_insight_candidate(insight: InsightCandidate) -> list[str]:
     return errors
 
 
+def validate_confidence(confidence: str) -> list[str]:
+    if confidence not in CONFIDENCE_LEVELS:
+        return [f"confidence must be one of {sorted(CONFIDENCE_LEVELS)}, got {confidence!r}"]
+    return []
+
+
 def validate_review_decision(decision: str) -> list[str]:
     if decision not in REVIEW_DECISIONS:
         return [f"decision must be one of {sorted(REVIEW_DECISIONS)}, got {decision!r}"]

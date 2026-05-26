@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass
@@ -14,6 +15,7 @@ from hbs_ads.features.market_research.models import CreativeAnalysisResult
 from hbs_ads.features.market_research.taxonomy import ANALYSIS_SCHEMA_VERSION
 from hbs_ads.features.market_research.validators import validate_analysis_payload
 
+logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a mobile game ad creative analyst for market research.
 
@@ -67,8 +69,39 @@ asset_ref: "{asset_ref}"
 """
 
 
+_RETRYABLE_STATUS_CODES = {429, 503}
+_MAX_RETRIES = 4
+_RETRY_BASE_DELAY = 2.0  # seconds
+
+
 def _now_iso() -> str:
     return datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _generate_with_retry(client: Any, model: str, contents: Any, timeout: int) -> Any:
+    """Call generate_content with exponential backoff on 429/503 errors."""
+    for attempt in range(_MAX_RETRIES + 1):
+        try:
+            return client.models.generate_content(
+                model=model,
+                contents=contents,
+                request_options={"timeout": timeout},
+            )
+        except Exception as exc:
+            status = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+            # google-genai may embed status in message; also check string
+            is_retryable = status in _RETRYABLE_STATUS_CODES or any(
+                str(s) in str(exc) for s in _RETRYABLE_STATUS_CODES
+            )
+            if not is_retryable or attempt == _MAX_RETRIES:
+                raise
+            delay = _RETRY_BASE_DELAY * (2 ** attempt)
+            logger.warning(
+                "Gemini rate limit hit (attempt %d/%d), retrying in %.1fs: %s",
+                attempt + 1, _MAX_RETRIES, delay, exc,
+            )
+            time.sleep(delay)
+    raise RuntimeError("unreachable")
 
 
 @dataclass(slots=True)
@@ -133,10 +166,8 @@ class GeminiMarketResearchAnalyzer:
                 raise
 
         try:
-            response = client.models.generate_content(
-                model=self.settings.clip_analysis_model,
-                contents=contents,
-                request_options={"timeout": 90},
+            response = _generate_with_retry(
+                client, self.settings.clip_analysis_model, contents, timeout=90
             )
             raw_payload = self._parse_json(response.text)
             errors = validate_analysis_payload(raw_payload)
@@ -172,17 +203,17 @@ class GeminiMarketResearchAnalyzer:
             "Return ONLY valid JSON with no markdown or commentary."
         )
         try:
-            response = client.models.generate_content(
-                model=self.settings.clip_analysis_model,
-                contents=[SYSTEM_PROMPT, user_prompt, repair_prompt],
-                request_options={"timeout": 60},
+            response = _generate_with_retry(
+                client, self.settings.clip_analysis_model,
+                [SYSTEM_PROMPT, user_prompt, repair_prompt], timeout=60,
             )
             repaired = self._parse_json(response.text)
             repair_errors = validate_analysis_payload(repaired)
             if not repair_errors:
                 return repaired
-        except Exception:
-            pass
+            logger.warning("Repair attempt still invalid after retry; errors: %s", repair_errors)
+        except Exception as exc:
+            logger.warning("Repair attempt failed with exception: %s", exc)
         return None
 
     def _load_fixture(self, asset_path: Path) -> dict[str, Any] | None:
@@ -192,7 +223,9 @@ class GeminiMarketResearchAnalyzer:
                 return self._parse_json(candidate.read_text(encoding="utf-8"))
         return None
 
-    def _parse_json(self, raw: str) -> dict[str, Any]:
+    def _parse_json(self, raw: str | None) -> dict[str, Any]:
+        if not raw or not raw.strip():
+            raise AppError("market research analysis returned an empty response")
         cleaned = raw.strip()
         if cleaned.startswith("```"):
             parts = cleaned.split("```")
@@ -200,7 +233,10 @@ class GeminiMarketResearchAnalyzer:
             if cleaned.startswith("json"):
                 cleaned = cleaned[4:]
             cleaned = cleaned.strip()
-        payload = json.loads(cleaned)
+        try:
+            payload = json.loads(cleaned)
+        except json.JSONDecodeError as exc:
+            raise AppError(f"market research analysis response is not valid JSON: {exc}") from exc
         if not isinstance(payload, dict):
             raise AppError("market research analysis response must be a JSON object")
         return payload

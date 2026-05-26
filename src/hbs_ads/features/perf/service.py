@@ -38,7 +38,7 @@ class PerfService:
         totals: dict[str, float] = {}
         by_variant: dict[str, dict[str, float | int]] = {}
         for csv_file in csv_files:
-            with csv_file.open(newline="", encoding="utf-8") as handle:
+            with csv_file.open(newline="", encoding="utf-8", errors="replace") as handle:
                 reader = csv.DictReader(handle)
                 for row in reader:
                     rows.append(row)
@@ -62,8 +62,11 @@ class PerfService:
         }
         report_path = layout.reports_dir / "perf.json"
         if not request.dry_run:
-            layout.reports_dir.mkdir(parents=True, exist_ok=True)
-            report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            try:
+                layout.reports_dir.mkdir(parents=True, exist_ok=True)
+                report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            except OSError as e:
+                raise AppError(f"Failed to write {report_path}: {e}") from e
         return CommandResult(
             status="planned" if request.dry_run else "ok",
             message=f"perf ingest {'planned' if request.dry_run else 'completed'}",
@@ -80,7 +83,10 @@ class PerfService:
         report_path = layout.reports_dir / "perf.json"
         if not report_path.exists():
             raise AppError("perf report not found; run perf ingest first")
-        report = json.loads(report_path.read_text(encoding="utf-8"))
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            raise AppError(f"Invalid JSON in {report_path}: {e}") from e
         return CommandResult(
             status="ok",
             message=f"perf report loaded from {report_path}",

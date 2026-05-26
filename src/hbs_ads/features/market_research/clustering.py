@@ -68,6 +68,8 @@ def build_variant_clusters(
 
     clusters: list[VariantCluster] = []
     for (app, platform), asset_ids in groups.items():
+        if not asset_ids:
+            continue
         vcl_id = "vcl_" + hashlib.sha256(f"{app}|{platform}".encode()).hexdigest()[:10]
         clusters.append(
             VariantCluster(
@@ -102,6 +104,8 @@ def build_concept_clusters(
 
     clusters: list[ConceptCluster] = []
     for app, vcl_ids in groups.items():
+        if not vcl_ids:
+            continue
         ccl_id = "ccl_" + hashlib.sha256(app.encode()).hexdigest()[:10]
         clusters.append(
             ConceptCluster(
