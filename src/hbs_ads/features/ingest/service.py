@@ -46,17 +46,15 @@ class IngestService:
         skipped = []
         for source in inbox_files:
             destination = layout.raw_assets_dir / source.name
-            if destination.exists() and not request.dry_run:
-                skipped.append({"source": str(source), "destination": str(destination), "reason": "exists"})
-                continue
             actions.append({"source": str(source), "destination": str(destination)})
             if request.dry_run:
                 continue
-            try:
-                shutil.copy2(source, destination)
-            except OSError as exc:
-                skipped.append({"source": str(source), "destination": str(destination), "reason": str(exc)})
-                continue
+            if not destination.exists():
+                try:
+                    shutil.copy2(source, destination)
+                except OSError as exc:
+                    skipped.append({"source": str(source), "destination": str(destination), "reason": str(exc)})
+                    continue
             current = existing.get(str(destination))
             self.database.upsert_clip(
                 ClipRecord(

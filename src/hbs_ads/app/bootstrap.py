@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import logging
 import os
 
 from hbs_ads.app.settings import ResolvedSettings
@@ -62,11 +61,6 @@ def build_app(
         sharepoint_client = M365SharePointClient(settings=settings, command_runner=command_runner)
     else:
         sharepoint_client = FileBackedSharePointClient(settings=settings)
-    try:
-        database.bootstrap()
-    except Exception as exc:
-        logging.getLogger(__name__).error("Database bootstrap failed: %s", exc)
-        raise RuntimeError(f"Failed to initialise database at {settings.database.path}: {exc}") from exc
     bootstrap = BootstrapService(settings=settings, workspace=workspace, database=database)
     assets = AssetsService(workspace=workspace, settings=settings)
     ingest = IngestService(settings=settings, workspace=workspace, database=database)
