@@ -21,22 +21,25 @@ from hbs_ads.features.market_research.taxonomy import (
 )
 
 
+def _validate_required_string(value: Any, field_name: str) -> list[str]:
+    if value is None:
+        return [f"{field_name} is required"]
+    if isinstance(value, str) and not value.strip():
+        return [f"{field_name} cannot be empty"]
+    return []
+
+
 def validate_brief(brief: ResearchBrief) -> list[str]:
     errors: list[str] = []
-    if not brief.brief_id:
-        errors.append("brief_id is required")
-    if not brief.research_goal:
-        errors.append("research_goal is required")
+    errors.extend(_validate_required_string(brief.brief_id, "brief_id"))
+    errors.extend(_validate_required_string(brief.research_goal, "research_goal"))
     if not brief.market_scope:
         errors.append("market_scope is required")
     if not brief.analysis_focus:
         errors.append("analysis_focus must list at least one dimension")
-    if not brief.sampling_strategy:
-        errors.append("sampling_strategy is required")
-    if not brief.output_mode:
-        errors.append("output_mode is required")
-    if not brief.review_mode:
-        errors.append("review_mode is required")
+    errors.extend(_validate_required_string(brief.sampling_strategy, "sampling_strategy"))
+    errors.extend(_validate_required_string(brief.output_mode, "output_mode"))
+    errors.extend(_validate_required_string(brief.review_mode, "review_mode"))
     return errors
 
 
@@ -140,6 +143,12 @@ def validate_insight_candidate(insight: InsightCandidate) -> list[str]:
     if insight.confidence not in CONFIDENCE_LEVELS:
         errors.append(f"confidence must be one of {sorted(CONFIDENCE_LEVELS)}, got {insight.confidence!r}")
     return errors
+
+
+def validate_confidence(confidence: str) -> list[str]:
+    if confidence not in CONFIDENCE_LEVELS:
+        return [f"confidence must be one of {sorted(CONFIDENCE_LEVELS)}, got {confidence!r}"]
+    return []
 
 
 def validate_review_decision(decision: str) -> list[str]:

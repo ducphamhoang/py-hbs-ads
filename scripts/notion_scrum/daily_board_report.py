@@ -119,16 +119,24 @@ def _status_name(prop: dict[str, Any] | None) -> str | None:
 
 
 def _is_overdue(due_date_str: str | None, today: str) -> bool:
-    """Compare dates safely, assuming ISO format."""
+    """Compare dates safely. Returns False on malformed dates."""
     if not due_date_str:
         return False
     try:
-        due_date = datetime.fromisoformat(due_date_str).date() if 'T' in due_date_str else datetime.fromisoformat(due_date_str)
-        today_date = datetime.fromisoformat(today).date()
+        if 'T' in due_date_str:
+            due_date = datetime.fromisoformat(due_date_str.replace('Z', '+00:00')).date()
+        else:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+
+        if 'T' in today:
+            today_date = datetime.fromisoformat(today.replace('Z', '+00:00')).date()
+        else:
+            today_date = datetime.strptime(today, "%Y-%m-%d").date()
+
         return due_date < today_date
-    except (ValueError, AttributeError):
-        # Fallback to string comparison with warning
-        return due_date_str < today
+    except (ValueError, AttributeError) as e:
+        print(f"WARNING: Invalid date format: {due_date_str} or {today}: {e}", file=sys.stderr)
+        return False
 
 
 def _date_start(prop: dict[str, Any] | None) -> str | None:

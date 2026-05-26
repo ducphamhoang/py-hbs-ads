@@ -219,6 +219,15 @@ def select_representatives_for_concept_cluster(
         key=lambda vc: (vc.get("cluster_confidence", 0.0), vc.get("representative_asset_id", "")),
         reverse=True,
     )
+    if not ranked_variant_clusters:
+        return AssetSelectionDecision(
+            cluster_id=concept_cluster["concept_cluster_id"],
+            cluster_type="concept",
+            selected_asset_ids=[],
+            selection_reason=["no_variant_clusters"],
+            selection_confidence="low",
+            fallback_used=True,
+        )
     best_variant_cluster = ranked_variant_clusters[0]
     default_rep_id = best_variant_cluster.get("representative_asset_id", "")
 

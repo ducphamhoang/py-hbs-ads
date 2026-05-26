@@ -105,10 +105,14 @@ class DirectGraphTeamsClient:
         return [self._chat_from_payload(item) for item in self._value_list(payload)]
 
     def list_messages(self, *, chat_id: str, top: int) -> list[TeamsMessage]:
+        if not chat_id or not chat_id.strip():
+            raise AppError("chat_id cannot be empty")
         payload = self._request_json("GET", f"{GRAPH_ROOT}/chats/{chat_id}/messages?$top={top}")
         return [self._message_from_payload(item) for item in self._value_list(payload)]
 
     def send_message(self, *, chat_id: str, message: str, dry_run: bool) -> TeamsSendResult:
+        if not chat_id or not chat_id.strip():
+            raise AppError("chat_id cannot be empty")
         if dry_run:
             return TeamsSendResult(chat_id=chat_id, dry_run=True)
         payload = self._request_json(
@@ -218,10 +222,14 @@ class M365TeamsClient:
         return [self._chat_from_payload(item) for item in self._value_list(payload)]
 
     def list_messages(self, *, chat_id: str, top: int) -> list[TeamsMessage]:
+        if not chat_id or not chat_id.strip():
+            raise AppError("chat_id cannot be empty")
         payload = self._request_json("GET", f"{GRAPH_ROOT}/chats/{chat_id}/messages?$top={top}")
         return [self._message_from_payload(item) for item in self._value_list(payload)]
 
     def send_message(self, *, chat_id: str, message: str, dry_run: bool) -> TeamsSendResult:
+        if not chat_id or not chat_id.strip():
+            raise AppError("chat_id cannot be empty")
         if dry_run:
             return TeamsSendResult(chat_id=chat_id, dry_run=True)
         payload = self._request_json(

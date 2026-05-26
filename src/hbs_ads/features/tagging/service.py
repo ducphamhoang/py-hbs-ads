@@ -56,7 +56,8 @@ class TaggingService:
         if request.only_low_confidence:
             clips = [clip for clip in clips if clip.confidence == "low"]
         if self.analyzer is None:
-            raise RuntimeError("tag ai requires a configured clip analyzer")
+            from hbs_ads.core.errors import AppError
+            raise AppError("tag ai requires a configured clip analyzer")
 
         updated = 0
         analyses: list[dict[str, object]] = []

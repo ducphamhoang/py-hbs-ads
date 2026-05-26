@@ -41,13 +41,29 @@ def _write_json(path: Path, data: Any) -> None:
 
 
 def _read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8"))
+    if not path.exists():
+        raise FileNotFoundError(f"File not found: {path}")
+    try:
+        content = path.read_text(encoding="utf-8").strip()
+        if not content:
+            raise ValueError(f"Empty JSON file: {path}")
+        return json.loads(content)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in {path}: {e}") from e
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return records
 
 
 def _artifact_dataclass_list(path: Path, cls: Any) -> list[Any]:

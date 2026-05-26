@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime, timezone
 
 from hbs_ads.features.market_research.models import InsightCandidate, ReviewDecision
-from hbs_ads.features.market_research.validators import validate_review_decision
+from hbs_ads.features.market_research.validators import validate_confidence, validate_review_decision
 
 
 def _now_iso() -> str:
@@ -23,11 +24,16 @@ def apply_review(
     updated_confidence: str = "",
     run_id: str = "",
 ) -> tuple[InsightCandidate, ReviewDecision]:
-    errors = validate_review_decision(decision)
+    errors: list[str] = []
+    if not reviewer or not reviewer.strip():
+        errors.append("reviewer cannot be empty")
+    errors.extend(validate_review_decision(decision))
+    resolved_confidence = updated_confidence or insight.confidence
+    errors.extend(validate_confidence(resolved_confidence))
     if errors:
         raise ReviewError("; ".join(errors))
 
-    review_id = f"review_{insight.insight_candidate_id}_{decision}"
+    review_id = f"review_{insight.insight_candidate_id}_{decision}_{uuid.uuid4().hex[:8]}"
     review = ReviewDecision(
         review_id=review_id,
         run_id=run_id or insight.run_id,
@@ -36,7 +42,7 @@ def apply_review(
         reviewer=reviewer,
         decision=decision,
         rationale=rationale,
-        updated_confidence=updated_confidence or insight.confidence,
+        updated_confidence=resolved_confidence,
         created_at=_now_iso(),
     )
 
@@ -48,7 +54,7 @@ def apply_review(
         signal=insight.signal,
         evidence_summary=insight.evidence_summary,
         scope=insight.scope,
-        confidence=updated_confidence or insight.confidence,
+        confidence=resolved_confidence,
         implication=insight.implication,
         evidence_refs=insight.evidence_refs,
         needs_human_review=False,

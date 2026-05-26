@@ -43,12 +43,18 @@ class IngestService:
         inbox_files = [path for path in sorted(layout.inbox_dir.iterdir()) if path.is_file()]
         existing = {clip.path: clip for clip in self.database.list_clips()}
         actions = []
+        skipped = []
         for source in inbox_files:
             destination = layout.raw_assets_dir / source.name
             actions.append({"source": str(source), "destination": str(destination)})
             if request.dry_run:
                 continue
-            shutil.copy2(source, destination)
+            if not destination.exists():
+                try:
+                    shutil.copy2(source, destination)
+                except OSError as exc:
+                    skipped.append({"source": str(source), "destination": str(destination), "reason": str(exc)})
+                    continue
             current = existing.get(str(destination))
             self.database.upsert_clip(
                 ClipRecord(
@@ -63,7 +69,7 @@ class IngestService:
         return CommandResult(
             status="ok",
             message=f"ingest {'planned' if request.dry_run else 'completed'} for {len(actions)} files",
-            data={"files": actions, "dry_run": request.dry_run},
+            data={"files": actions, "skipped": skipped, "dry_run": request.dry_run},
         )
 
     def watch(self, request: IngestWatchRequest) -> CommandResult:

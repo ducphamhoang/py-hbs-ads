@@ -24,7 +24,10 @@ def _copy_sidecars(source_path: Path, staged_path: Path) -> None:
     for suffix in (".market-analysis.json", ".mr-analysis.json"):
         sidecar = source_path.with_name(f"{source_path.name}{suffix}")
         if sidecar.exists():
-            shutil.copy2(sidecar, staged_path.with_name(f"{staged_path.name}{suffix}"))
+            try:
+                shutil.copy2(sidecar, staged_path.with_name(f"{staged_path.name}{suffix}"))
+            except OSError:
+                pass
 
 
 def intake_asset_files(
@@ -55,7 +58,11 @@ def intake_asset_files(
             continue
 
         staged_path = assets_root / _safe_filename(source_path, index)
-        shutil.copy2(source_path, staged_path)
+        try:
+            shutil.copy2(source_path, staged_path)
+        except OSError as exc:
+            errors.append({"asset_path": str(source_path), "error": str(exc)})
+            continue
         _copy_sidecars(source_path, staged_path)
 
         source_record_id = candidate_defaults.get("source_record_id") or source_path.stem or f"upload_{index:03d}"

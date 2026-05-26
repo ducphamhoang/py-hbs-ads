@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from hbs_ads.app.settings import ResolvedSettings
+from hbs_ads.core.errors import AppError
 
 
 WORKSPACE_DIRS = [
@@ -108,16 +109,25 @@ class WorkspaceManager:
 
     def initialize(self, settings: ResolvedSettings) -> WorkspaceLayout:
         layout = self.from_settings(settings)
-        layout.root.mkdir(parents=True, exist_ok=True)
-        for dirname in WORKSPACE_DIRS:
-            (layout.root / dirname).mkdir(parents=True, exist_ok=True)
-        layout.raw_assets_dir.mkdir(parents=True, exist_ok=True)
-        layout.trimmed_assets_dir.mkdir(parents=True, exist_ok=True)
-        layout.perf_inbox_dir.mkdir(parents=True, exist_ok=True)
-        layout.sharepoint_library_dir.mkdir(parents=True, exist_ok=True)
-        layout.sharepoint_downloads_dir.mkdir(parents=True, exist_ok=True)
-        layout.teams_dir.mkdir(parents=True, exist_ok=True)
-        layout.voiceover_dir.mkdir(parents=True, exist_ok=True)
+        dirs_to_create = [
+            layout.root,
+            *(layout.root / dirname for dirname in WORKSPACE_DIRS),
+            layout.raw_assets_dir,
+            layout.trimmed_assets_dir,
+            layout.perf_inbox_dir,
+            layout.sharepoint_library_dir,
+            layout.sharepoint_downloads_dir,
+            layout.teams_dir,
+            layout.voiceover_dir,
+        ]
+        for path in dirs_to_create:
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                raise AppError(f"Failed to create directory {path}: {e}")
         if not layout.config_file.exists():
-            layout.config_file.write_text(DEFAULT_CONFIG_TEXT, encoding="utf-8")
+            try:
+                layout.config_file.write_text(DEFAULT_CONFIG_TEXT, encoding="utf-8")
+            except OSError as e:
+                raise AppError(f"Failed to write config file {layout.config_file}: {e}")
         return layout

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import sys
 from collections.abc import Sequence
 
@@ -7,6 +8,8 @@ from hbs_ads.app.bootstrap import build_app
 from hbs_ads.cli.parser import build_parser
 from hbs_ads.cli.renderers import render_error, render_result
 from hbs_ads.core.errors import AppError
+
+logger = logging.getLogger(__name__)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -32,6 +35,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             workspace=namespace.workspace,
         )
         return exc.exit_code
+    except Exception as exc:
+        logger.exception("Unexpected error: %s", exc)
+        render_error(
+            AppError(f"Unexpected error: {exc.__class__.__name__}: {exc}", exit_code=1),
+            output_mode=namespace.output,
+            command=_command_name(namespace),
+            workspace=namespace.workspace,
+        )
+        return 1
 
     result.output_mode = namespace.output
     render_result(

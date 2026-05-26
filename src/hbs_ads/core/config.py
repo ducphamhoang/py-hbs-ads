@@ -80,7 +80,7 @@ ENV_MAPPING = {
     "M365_TENANT_ID": ("teams", "tenant_id"),
     "M365_TEAMS_APP_ID": ("teams", "app_id"),
     "DISCORD_WEBHOOK_URL": ("notify", "discord_webhook_url"),
-    "GEMINI_API_KEY": ("ai", "gemini_api_key_env"),
+    # Note: GEMINI_API_KEY is read via gemini_api_key_env indirection, not mapped here
     "VIDEO_LIBRARY_ROOT": ("library", "root"),
 }
 
@@ -137,10 +137,16 @@ def apply_env_overrides(config: dict[str, Any], env: dict[str, str]) -> dict[str
 def load_config_file(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    text = path.read_text(encoding="utf-8")
-    if path.suffix.lower() == ".json":
-        return json.loads(text)
-    return parse_simple_yaml(text)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return {}
+    try:
+        if path.suffix.lower() == ".json":
+            return json.loads(text)
+        return parse_simple_yaml(text)
+    except json.JSONDecodeError:
+        return {}
 
 
 def load_dotenv_file(path: Path) -> dict[str, str]:

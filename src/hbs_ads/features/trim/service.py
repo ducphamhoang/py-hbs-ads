@@ -43,10 +43,17 @@ class TrimService:
         self.command_runner = command_runner
 
     def run(self, request: TrimRunRequest) -> CommandResult:
-        content = json.loads(request.config_path.read_text(encoding="utf-8"))
+        try:
+            content = json.loads(request.config_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, FileNotFoundError, UnicodeDecodeError) as e:
+            raise AppError(f"failed to load trim config: {e}")
         clips = content.get("clips", content) if isinstance(content, dict) else content
         results = []
         for clip in clips:
+            required_keys = ("input", "from", "to", "name")
+            missing = [k for k in required_keys if k not in clip]
+            if missing:
+                raise AppError(f"trim config missing required keys: {missing}")
             results.append(
                 self._clip_impl(
                     TrimClipRequest(

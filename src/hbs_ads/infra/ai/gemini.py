@@ -74,11 +74,23 @@ class GeminiClipAnalyzer:
             else:
                 raise AppError(f"Gemini file never became ACTIVE: {clip_path.name}")
 
-            response = client.models.generate_content(
-                model=self.settings.clip_analysis_model,
-                contents=[uploaded, GEMINI_CLIP_ANALYSIS_PROMPT],
-                request_options={"timeout": 60},
-            )
+            response = None
+            for retry in range(3):
+                try:
+                    response = client.models.generate_content(
+                        model=self.settings.clip_analysis_model,
+                        contents=[uploaded, GEMINI_CLIP_ANALYSIS_PROMPT],
+                        request_options={"timeout": 60},
+                    )
+                    break
+                except Exception as retry_exc:
+                    if "429" in str(retry_exc) or "quota" in str(retry_exc).lower():
+                        if retry < 2:
+                            time.sleep(2 ** (retry + 1))
+                            continue
+                    raise
+            if response is None:
+                raise AppError(f"Gemini quota exhausted after retries: {clip_path.name}")
             return self._normalize_analysis(self._parse_json(response.text))
         except Exception as exc:
             if isinstance(exc, AppError):
